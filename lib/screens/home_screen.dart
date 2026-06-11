@@ -1,0 +1,353 @@
+import 'package:flutter/material.dart';
+
+import '../logic/i18n.dart';
+import '../logic/native.dart';
+import '../logic/speech.dart';
+import '../logic/store.dart';
+import '../theme.dart';
+import '../widgets/widgets.dart';
+
+class HomeScreen extends StatefulWidget {
+  final String lang;
+  final VoidCallback onNavigateToPermissions;
+  const HomeScreen(
+      {super.key, required this.lang, required this.onNavigateToPermissions});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  bool _usageOk = false;
+  bool _overlayOk = false;
+  bool _running = false;
+  String _mode = 'adult';
+  List<HistoryEntry> _recent = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refresh();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refresh();
+  }
+
+  Future<void> _refresh() async {
+    final usage = await Native.hasUsageAccess();
+    final overlay = await Native.hasOverlayPermission();
+    final running = await Native.isMonitorRunning();
+    final mode = await Store.userMode();
+    final history = await Store.history();
+    if (!mounted) return;
+    setState(() {
+      _usageOk = usage;
+      _overlayOk = overlay;
+      _running = running;
+      _mode = mode;
+      _recent = history.take(3).toList();
+    });
+  }
+
+  Future<void> _toggleProtection() async {
+    if (_running) {
+      await Native.stopMonitor();
+    } else {
+      if (!_usageOk) {
+        await Native.openUsageAccessSettings();
+        return;
+      }
+      if (!_overlayOk) {
+        await Native.openOverlaySettings();
+        return;
+      }
+      await Native.requestNotificationPermission();
+      await Native.startMonitor();
+    }
+    await Future.delayed(const Duration(milliseconds: 400));
+    _refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = widget.lang;
+    final ready = _usageOk && _overlayOk;
+    return Scaffold(
+      backgroundColor: CLColors.bg,
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const CLLogo(size: 30),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('ConsentLens',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: CLColors.textPrimary)),
+                Text(S.tagline.of(lang),
+                    style: const TextStyle(
+                        fontSize: 11, color: CLColors.textMuted)),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.volume_up_rounded, color: CLColors.textSec),
+            tooltip: 'Voice narration',
+            onPressed: () => Speech.speak(
+                '${S.appName.of(lang)}. ${S.tagline.of(lang)}', lang),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            // ── Protection status ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: _running
+                                ? CLColors.greenLight
+                                : CLColors.redLight,
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                          child: Icon(
+                            _running
+                                ? Icons.shield_rounded
+                                : Icons.shield_outlined,
+                            color:
+                                _running ? CLColors.green : CLColors.redDark,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                (_running
+                                        ? S.protectionActive
+                                        : S.protectionOff)
+                                    .of(lang),
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: CLColors.textPrimary),
+                              ),
+                              Row(
+                                children: [
+                                  Text('${S.currentUser.of(lang)}: ',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: CLColors.textMuted)),
+                                  ModeBadge(mode: _mode, lang: lang),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _running,
+                          onChanged: (_) => _toggleProtection(),
+                          activeColor: CLColors.pink,
+                        ),
+                      ],
+                    ),
+                    if (!ready) ...[
+                      const Divider(height: 22),
+                      _setupRow(
+                        ok: _usageOk,
+                        title: S.usageAccess.of(lang),
+                        subtitle: S.usageAccessSub.of(lang),
+                        onGrant: Native.openUsageAccessSettings,
+                        lang: lang,
+                      ),
+                      const SizedBox(height: 8),
+                      _setupRow(
+                        ok: _overlayOk,
+                        title: S.overlayAccess.of(lang),
+                        subtitle: S.overlayAccessSub.of(lang),
+                        onGrant: Native.openOverlaySettings,
+                        lang: lang,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Identity verification ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  await Native.verifyNow();
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: CLColors.purpleLight,
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: const Icon(Icons.fingerprint_rounded,
+                            color: CLColors.purple, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(S.verifyNow.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: CLColors.textPrimary)),
+                            Text(S.verifySub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CLColors.textMuted,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: CLColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Recent alerts ──
+            SectionLabel(S.recentAlerts.of(lang)),
+            if (_recent.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(S.noAlerts.of(lang), style: CLTextStyles.body),
+              ),
+            ..._recent.map((h) => Card(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  child: ListTile(
+                    dense: true,
+                    leading: Text(h.high ? '🚨' : '✅',
+                        style: const TextStyle(fontSize: 20)),
+                    title: Text(h.appName,
+                        style: const TextStyle(
+                            fontSize: 13.5, fontWeight: FontWeight.w600)),
+                    subtitle: Text(
+                        '${h.catCount} ${S.permissions.of(lang).toLowerCase()} · ${h.timeAgo()}',
+                        style: const TextStyle(
+                            fontSize: 11, color: CLColors.textMuted)),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color:
+                            h.high ? CLColors.redLight : CLColors.greenLight,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        (h.high ? S.riskHigh : S.riskLow).of(lang),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                h.high ? CLColors.redDark : CLColors.green),
+                      ),
+                    ),
+                    onTap: widget.onNavigateToPermissions,
+                  ),
+                )),
+            const SizedBox(height: 14),
+            const PrivacyChipsStrip(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _setupRow({
+    required bool ok,
+    required String title,
+    required String subtitle,
+    required Future<void> Function() onGrant,
+    required String lang,
+  }) {
+    return Row(
+      children: [
+        Icon(ok ? Icons.check_circle_rounded : Icons.error_rounded,
+            size: 20, color: ok ? CLColors.green : CLColors.amber),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(subtitle,
+                  style: const TextStyle(
+                      fontSize: 11, color: CLColors.textMuted)),
+            ],
+          ),
+        ),
+        if (!ok)
+          TextButton(
+            onPressed: () async {
+              await onGrant();
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: CLColors.pink,
+              foregroundColor: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(S.grant.of(lang),
+                style: const TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w600)),
+          )
+        else
+          Text(S.granted.of(lang),
+              style: const TextStyle(
+                  fontSize: 11,
+                  color: CLColors.green,
+                  fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+}
