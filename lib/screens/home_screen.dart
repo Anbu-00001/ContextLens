@@ -5,11 +5,16 @@ import '../logic/native.dart';
 import '../logic/speech.dart';
 import '../logic/store.dart';
 import '../theme.dart';
+import 'package:flutter/services.dart';
+
 import '../widgets/widgets.dart';
 import 'emergency_hub.dart';
+import 'kids_mode.dart';
+import 'learn_zone.dart';
 import 'safe_browser.dart';
 import 'safety_screen.dart';
 import 'scam_scan.dart';
+import 'trusted_circle.dart';
 
 class HomeScreen extends StatefulWidget {
   final String lang;
@@ -29,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String _mode = 'adult';
   int? _spyCount;
   List<HistoryEntry> _recent = [];
+  final ScrollController _scroll = ScrollController();
 
   @override
   void initState() {
@@ -40,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -126,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
+          controller: _scroll,
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             // ── Protection status ──
@@ -492,6 +500,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ),
 
+            // ── Learn & protect more ──
+            SectionLabel(S.learnZone.of(lang)),
+            _toolTile(
+              emoji: '🎓',
+              bg: CLColors.purpleLight,
+              title: S.learnZone.of(lang),
+              subtitle: S.learnZoneSub.of(lang),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => LearnZoneScreen(lang: lang))),
+            ),
+            _toolTile(
+              emoji: '🤝',
+              bg: CLColors.pinkLight,
+              title: S.trustedCircle.of(lang),
+              subtitle: S.trustedCircleSub.of(lang),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(
+                      builder: (_) => TrustedCircleScreen(lang: lang))),
+            ),
+            _toolTile(
+              emoji: '🧸',
+              bg: CLColors.blueLight,
+              title: S.kidsMode.of(lang),
+              subtitle: S.kidsModeSub.of(lang),
+              onTap: () => _launchKidsMode(context, lang),
+            ),
+
             // ── Recent alerts ──
             SectionLabel(S.recentAlerts.of(lang)),
             if (_recent.isEmpty)
@@ -540,6 +575,94 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  Widget _toolTile({
+    required String emoji,
+    required Color bg,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration:
+                    BoxDecoration(color: bg, borderRadius: BorderRadius.circular(11)),
+                child: Center(
+                    child: Text(emoji, style: const TextStyle(fontSize: 20))),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: CLColors.textPrimary)),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: CLColors.textMuted,
+                            height: 1.3)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: CLColors.textMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchKidsMode(BuildContext context, String lang) async {
+    var pin = await Store.kidsPin();
+    if (pin == null && context.mounted) {
+      final set = TextEditingController();
+      pin = await showDialog<String>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(S.setPin.of(lang)),
+          content: TextField(
+            controller: set,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 4,
+            autofocus: true,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(counterText: ''),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                if (set.text.length == 4) Navigator.pop(context, set.text);
+              },
+              child: Text(S.saveContact.of(lang)),
+            ),
+          ],
+        ),
+      );
+      if (pin != null) await Store.setKidsPin(pin);
+    }
+    if (pin != null && context.mounted) {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (_) => KidsModeScreen(lang: lang)));
+    }
   }
 
   Widget _setupRow({

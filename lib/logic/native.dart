@@ -63,6 +63,12 @@ class Native {
 
   static Future<void> verifyNow() => _ch.invokeMethod('verifyNow');
 
+  static Future<bool> startScreenPinning() async =>
+      (await _ch.invokeMethod<bool>('startScreenPinning')) ?? false;
+
+  static Future<void> stopScreenPinning() =>
+      _ch.invokeMethod('stopScreenPinning');
+
   static Future<void> openAppDetails(String pkg) =>
       _ch.invokeMethod('openAppDetails', {'pkg': pkg});
 

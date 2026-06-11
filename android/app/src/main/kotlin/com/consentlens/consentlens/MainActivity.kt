@@ -60,6 +60,21 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "isMonitorRunning" -> result.success(MonitorService.running)
+                    "startScreenPinning" -> {
+                        try {
+                            startLockTask() // screen pinning (best-effort, no device owner)
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.success(false)
+                        }
+                    }
+                    "stopScreenPinning" -> {
+                        try {
+                            stopLockTask()
+                        } catch (_: Exception) {
+                        }
+                        result.success(null)
+                    }
                     "hasAccessibility" -> result.success(isAccessibilityEnabled())
                     "openAccessibilitySettings" -> {
                         startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
