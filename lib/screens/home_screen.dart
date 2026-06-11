@@ -6,8 +6,10 @@ import '../logic/speech.dart';
 import '../logic/store.dart';
 import '../theme.dart';
 import '../widgets/widgets.dart';
+import 'emergency_hub.dart';
 import 'safe_browser.dart';
 import 'safety_screen.dart';
+import 'scam_scan.dart';
 
 class HomeScreen extends StatefulWidget {
   final String lang;
@@ -205,6 +207,104 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ],
                   ],
+                ),
+              ),
+            ),
+
+            // ── Scan a message (Smart Scan, "during threat") ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => ScamScanScreen(lang: lang))),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                            color: CLColors.amberLight,
+                            borderRadius: BorderRadius.circular(11)),
+                        child: const Icon(Icons.search_rounded,
+                            color: CLColors.amber, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(S.scamScan.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: CLColors.textPrimary)),
+                            Text(S.scamScanSub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CLColors.textMuted,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: CLColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Emergency help (crisis) ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              color: CLColors.redLight,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFFF3C2C2)),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) => EmergencyHubScreen(lang: lang))),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                            color: CLColors.red,
+                            borderRadius: BorderRadius.circular(11)),
+                        child: const Icon(Icons.emergency_rounded,
+                            color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(S.emergencyHub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: CLColors.redDark)),
+                            Text(S.emergencyHubSub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CLColors.redDark,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: CLColors.redDark),
+                    ],
+                  ),
                 ),
               ),
             ),

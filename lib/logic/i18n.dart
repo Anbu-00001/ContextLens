@@ -231,4 +231,163 @@ class S {
       "Under India's DPDP Act, tracking children is not allowed.",
       'भारत के DPDP कानून के तहत बच्चों को ट्रैक करना मना है।',
       'ಭಾರತದ DPDP ಕಾಯ್ದೆ ಪ್ರಕಾರ ಮಕ್ಕಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು ನಿಷಿದ್ಧ.');
+
+  // ── Emergency Hub ──
+  static const emergencyHub =
+      L('Emergency help', 'आपातकालीन मदद', 'ತುರ್ತು ಸಹಾಯ');
+  static const emergencyHubSub = L('Been scammed? Get help right now',
+      'ठगी हो गई? अभी मदद पाएँ', 'ಮೋಸ ಆಯ್ತಾ? ಈಗಲೇ ಸಹಾಯ ಪಡೆಯಿರಿ');
+  static const call1930 = L('Call Cyber Police 1930', 'साइबर पुलिस 1930 को कॉल करें',
+      'ಸೈಬರ್ ಪೊಲೀಸ್ 1930 ಗೆ ಕರೆ ಮಾಡಿ');
+  static const call1930Sub = L(
+      'National Cyber Crime Helpline · works without internet',
+      'राष्ट्रीय साइबर क्राइम हेल्पलाइन · बिना इंटरनेट चलती है',
+      'ರಾಷ್ಟ್ರೀಯ ಸೈಬರ್ ಅಪರಾಧ ಸಹಾಯವಾಣಿ · ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ');
+  static const prepareReport =
+      L('Prepare my report', 'मेरी रिपोर्ट तैयार करें', 'ನನ್ನ ವರದಿ ಸಿದ್ಧಪಡಿಸಿ');
+  static const prepareReportSub = L(
+      'We write the complaint for cybercrime.gov.in',
+      'हम cybercrime.gov.in के लिए शिकायत लिख देंगे',
+      'cybercrime.gov.in ಗಾಗಿ ನಾವು ದೂರು ಬರೆಯುತ್ತೇವೆ');
+  static const reportViaWhatsapp = L('Report via WhatsApp',
+      'WhatsApp से रिपोर्ट करें', 'WhatsApp ಮೂಲಕ ವರದಿ ಮಾಡಿ');
+  static const reportViaWhatsappSub = L('Forward the fraud to Sanchar Saathi',
+      'फ्रॉड को संचार साथी को फॉरवर्ड करें', 'ವಂಚನೆಯನ್ನು ಸಂಚಾರ್ ಸಾಥಿಗೆ ಕಳುಹಿಸಿ');
+  static const reportAmount = L('How much money? (₹)', 'कितने पैसे? (₹)',
+      'ಎಷ್ಟು ಹಣ? (₹)');
+  static const reportWhen = L('When did it happen?', 'यह कब हुआ?', 'ಯಾವಾಗ ಆಯ್ತು?');
+  static const reportWhat = L('What happened? (short)', 'क्या हुआ? (संक्षेप में)',
+      'ಏನಾಯ್ತು? (ಸಂಕ್ಷಿಪ್ತ)');
+  static const reportTxn = L('Transaction ID (if any)', 'ट्रांज़ैक्शन ID (यदि हो)',
+      'ವಹಿವಾಟು ID (ಇದ್ದರೆ)');
+  static const generateReport =
+      L('Generate', 'बनाएँ', 'ರಚಿಸಿ');
+  static const copyReport =
+      L('Copy report', 'रिपोर्ट कॉपी करें', 'ವರದಿ ನಕಲಿಸಿ');
+  static const copied = L('Copied!', 'कॉपी हो गया!', 'ನಕಲಿಸಲಾಗಿದೆ!');
+  static const openPortal = L('Open portal', 'पोर्टल खोलें', 'ಪೋರ್ಟಲ್ ತೆರೆಯಿರಿ');
+
+  // ── Quick Hide ──
+  static const quickHideHint = L(
+      'Tap the shield any time to hide this app instantly.',
+      'इस ऐप को तुरंत छिपाने के लिए कभी भी शील्ड दबाएँ।',
+      'ಈ ಆ್ಯಪ್ ಅನ್ನು ತಕ್ಷಣ ಮರೆಮಾಡಲು ಯಾವಾಗ ಬೇಕಾದರೂ ಶೀಲ್ಡ್ ಒತ್ತಿರಿ.');
+
+  // ── Scam Scan ──
+  static const scamScan = L('Scan a message', 'संदेश जाँचें', 'ಸಂದೇಶ ಪರಿಶೀಲಿಸಿ');
+  static const scamScanSub = L(
+      'Is this message, link or payment safe? Check it.',
+      'क्या यह संदेश, लिंक या पेमेंट सुरक्षित है? जाँचें।',
+      'ಈ ಸಂದೇಶ, ಲಿಂಕ್ ಅಥವಾ ಪಾವತಿ ಸುರಕ್ಷಿತವೇ? ಪರಿಶೀಲಿಸಿ.');
+  static const pasteMessage = L('Paste the message or link here',
+      'संदेश या लिंक यहाँ पेस्ट करें', 'ಸಂದೇಶ ಅಥವಾ ಲಿಂಕ್ ಇಲ್ಲಿ ಅಂಟಿಸಿ');
+  static const pickScreenshot = L('Pick a screenshot', 'स्क्रीनशॉट चुनें',
+      'ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಆಯ್ಕೆಮಾಡಿ');
+  static const checkNow = L('Check now', 'अभी जाँचें', 'ಈಗ ಪರಿಶೀಲಿಸಿ');
+  static const reading = L('Reading the image…', 'इमेज पढ़ी जा रही है…',
+      'ಚಿತ್ರ ಓದಲಾಗುತ್ತಿದೆ…');
+  static const resultSafe = L('SAFE', 'सुरक्षित', 'ಸುರಕ್ಷಿತ');
+  static const resultSuspicious =
+      L('SUSPICIOUS', 'संदिग्ध', 'ಸಂಶಯಾಸ್ಪದ');
+  static const resultDangerous = L('DANGEROUS', 'खतरनाक', 'ಅಪಾಯಕಾರಿ');
+  static const whatWeFound =
+      L('What we found', 'हमें क्या मिला', 'ನಾವು ಏನು ಕಂಡೆವು');
+  static const safeBody = L(
+      'No common scam signs found. Still, stay careful with money and OTPs.',
+      'कोई आम ठगी का संकेत नहीं मिला। फिर भी पैसे और OTP को लेकर सतर्क रहें।',
+      'ಸಾಮಾನ್ಯ ಮೋಸದ ಚಿಹ್ನೆಗಳಿಲ್ಲ. ಆದರೂ ಹಣ ಮತ್ತು OTP ಬಗ್ಗೆ ಎಚ್ಚರವಾಗಿರಿ.');
+  static const offlineMode =
+      L('Offline mode · using saved rules', 'ऑफ़लाइन मोड · सहेजे नियमों से',
+          'ಆಫ್‌ಲೈನ್ ಮೋಡ್ · ಉಳಿಸಿದ ನಿಯಮಗಳಿಂದ');
+  static const ruleToRemember =
+      L('Rule to remember', 'याद रखने का नियम', 'ನೆನಪಿಡುವ ನಿಯಮ');
+  static const shareRule = L('Share on WhatsApp', 'WhatsApp पर शेयर करें',
+      'WhatsApp ನಲ್ಲಿ ಹಂಚಿ');
+  static const emptyInput = L('Paste a message or pick a screenshot first.',
+      'पहले कोई संदेश पेस्ट करें या स्क्रीनशॉट चुनें।',
+      'ಮೊದಲು ಸಂದೇಶ ಅಂಟಿಸಿ ಅಥವಾ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಆಯ್ಕೆಮಾಡಿ.');
+  static const ocrFailed = L(
+      'Could not read text from that image. Try pasting the message instead.',
+      'उस इमेज से टेक्स्ट नहीं पढ़ पाए। संदेश पेस्ट करके देखें।',
+      'ಆ ಚಿತ್ರದಿಂದ ಪಠ್ಯ ಓದಲಾಗಲಿಲ್ಲ. ಸಂದೇಶವನ್ನು ಅಂಟಿಸಿ ಪ್ರಯತ್ನಿಸಿ.');
+
+  // ── Learning Zone ──
+  static const learnZone = L('Learn & practice', 'सीखें और अभ्यास करें',
+      'ಕಲಿಯಿರಿ ಮತ್ತು ಅಭ್ಯಾಸ');
+  static const learnZoneSub = L('Spot scams on your own. No reading needed.',
+      'खुद ठगी पहचानें। पढ़ने की ज़रूरत नहीं।',
+      'ನೀವೇ ಮೋಸ ಗುರುತಿಸಿ. ಓದುವ ಅಗತ್ಯವಿಲ್ಲ.');
+  static const lessons = L('Lessons', 'पाठ', 'ಪಾಠಗಳು');
+  static const practice = L('Practice', 'अभ्यास', 'ಅಭ್ಯಾಸ');
+  static const library = L('Real vs Fake', 'असली बनाम नकली', 'ನಿಜ vs ನಕಲಿ');
+  static const badges = L('Badges', 'बैज', 'ಬ್ಯಾಡ್ಜ್');
+  static const real = L('REAL', 'असली', 'ನಿಜ');
+  static const fake = L('FAKE', 'नकली', 'ನಕಲಿ');
+  static const theTell = L('The giveaway', 'पहचान', 'ಗುರುತು');
+  static const listen = L('Listen', 'सुनें', 'ಕೇಳಿ');
+  static const whatToDo = L('What to do', 'क्या करें', 'ಏನು ಮಾಡಬೇಕು');
+  static const isThisSafe =
+      L('Is this safe?', 'क्या यह सुरक्षित है?', 'ಇದು ಸುರಕ್ಷಿತವೇ?');
+  static const itsSafe = L("It's safe", 'सुरक्षित है', 'ಸುರಕ್ಷಿತ');
+  static const itsScam = L("It's a scam", 'यह ठगी है', 'ಇದು ಮೋಸ');
+  static const correct = L('Correct! 🎉', 'सही! 🎉', 'ಸರಿ! 🎉');
+  static const notQuite = L('Not quite', 'बिल्कुल सही नहीं', 'ಸರಿಯಲ್ಲ');
+  static const nextOne = L('Next', 'अगला', 'ಮುಂದೆ');
+  static const practiceDone =
+      L('Practice complete!', 'अभ्यास पूरा!', 'ಅಭ್ಯಾಸ ಮುಗಿಯಿತು!');
+  static const youScored = L('You scored', 'आपका स्कोर', 'ನಿಮ್ಮ ಅಂಕ');
+  static const badgeEarned =
+      L('Badge earned!', 'बैज मिला!', 'ಬ್ಯಾಡ್ಜ್ ಗಳಿಸಿದಿರಿ!');
+  static const shareBadge = L('Share badge', 'बैज शेयर करें', 'ಬ್ಯಾಡ್ಜ್ ಹಂಚಿ');
+  static const locked = L('Locked', 'बंद', 'ಲಾಕ್');
+  static const tapToStart = L('Tap to start', 'शुरू करने के लिए टैप करें',
+      'ಪ್ರಾರಂಭಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ');
+
+  // ── Trusted Circle ──
+  static const trustedCircle =
+      L('Trusted circle', 'भरोसेमंद लोग', 'ನಂಬಿಕೆಯ ವಲಯ');
+  static const trustedCircleSub = L(
+      'Add someone you trust. Alert them in one tap.',
+      'किसी भरोसेमंद को जोड़ें। एक टैप में सूचित करें।',
+      'ನೀವು ನಂಬುವವರನ್ನು ಸೇರಿಸಿ. ಒಂದೇ ಟ್ಯಾಪ್‌ನಲ್ಲಿ ಎಚ್ಚರಿಸಿ.');
+  static const addTrusted =
+      L('Add a trusted person', 'भरोसेमंद व्यक्ति जोड़ें', 'ನಂಬಿಕೆಯ ವ್ಯಕ್ತಿ ಸೇರಿಸಿ');
+  static const contactName = L('Their name', 'उनका नाम', 'ಅವರ ಹೆಸರು');
+  static const contactNumber = L('Their phone number', 'उनका फ़ोन नंबर',
+      'ಅವರ ಫೋನ್ ನಂಬರ್');
+  static const saveContact = L('Save', 'सहेजें', 'ಉಳಿಸಿ');
+  static const sendIntro = L('Send intro SMS', 'परिचय SMS भेजें',
+      'ಪರಿಚಯ SMS ಕಳುಹಿಸಿ');
+  static const alertContact = L('Alert my trusted person',
+      'मेरे भरोसेमंद व्यक्ति को सूचित करें', 'ನನ್ನ ನಂಬಿಕೆಯ ವ್ಯಕ್ತಿಗೆ ಎಚ್ಚರಿಸಿ');
+  static const noTrusted = L('No trusted person added yet.',
+      'अभी कोई भरोसेमंद व्यक्ति नहीं जोड़ा।',
+      'ಇನ್ನೂ ನಂಬಿಕೆಯ ವ್ಯಕ್ತಿ ಸೇರಿಸಿಲ್ಲ.');
+  static const removeContact = L('Remove', 'हटाएँ', 'ತೆಗೆದುಹಾಕಿ');
+  static const weeklySummary = L('Share weekly safety summary',
+      'साप्ताहिक सुरक्षा सारांश शेयर करें', 'ವಾರದ ಸುರಕ್ಷತಾ ಸಾರಾಂಶ ಹಂಚಿ');
+  static const weeklySummarySub = L(
+      'A short update for your trusted person — no private details.',
+      'आपके भरोसेमंद व्यक्ति के लिए छोटा अपडेट — कोई निजी जानकारी नहीं।',
+      'ನಿಮ್ಮ ನಂಬಿಕೆಯ ವ್ಯಕ್ತಿಗೆ ಚಿಕ್ಕ ಅಪ್‌ಡೇಟ್ — ಖಾಸಗಿ ವಿವರಗಳಿಲ್ಲ.');
+
+  // ── Safe Handoff / Kids Mode ──
+  static const kidsMode = L('Safe Handoff (Kids)', 'सुरक्षित हैंडऑफ़ (बच्चे)',
+      'ಸುರಕ್ಷಿತ ಹ್ಯಾಂಡ್‌ಆಫ್ (ಮಕ್ಕಳು)');
+  static const kidsModeSub = L('Hand the phone to a child safely',
+      'फ़ोन बच्चे को सुरक्षित रूप से दें', 'ಫೋನ್ ಅನ್ನು ಮಗುವಿಗೆ ಸುರಕ್ಷಿತವಾಗಿ ಕೊಡಿ');
+  static const setPin = L('Set a 4-digit PIN to exit',
+      'बाहर निकलने के लिए 4 अंकों का PIN सेट करें',
+      'ನಿರ್ಗಮಿಸಲು 4-ಅಂಕಿ PIN ಹೊಂದಿಸಿ');
+  static const enterPin = L('Enter PIN to exit', 'बाहर निकलने के लिए PIN डालें',
+      'ನಿರ್ಗಮಿಸಲು PIN ನಮೂದಿಸಿ');
+  static const wrongPin = L('Wrong PIN', 'गलत PIN', 'ತಪ್ಪು PIN');
+  static const startKidsMode = L('Start Kids Mode', 'बच्चों का मोड शुरू करें',
+      'ಮಕ್ಕಳ ಮೋಡ್ ಪ್ರಾರಂಭಿಸಿ');
+  static const kidsModeNote = L(
+      'A simple, safe screen. To leave, a grown-up enters the PIN. (Screen-lock is best-effort on this phone.)',
+      'एक सरल, सुरक्षित स्क्रीन। बाहर निकलने के लिए बड़े PIN डालें। (इस फ़ोन पर स्क्रीन-लॉक सर्वोत्तम-प्रयास है।)',
+      'ಸರಳ, ಸುರಕ್ಷಿತ ಪರದೆ. ಹೊರಹೋಗಲು ದೊಡ್ಡವರು PIN ನಮೂದಿಸಬೇಕು. (ಈ ಫೋನ್‌ನಲ್ಲಿ ಸ್ಕ್ರೀನ್-ಲಾಕ್ ಬೆಸ್ಟ್-ಎಫರ್ಟ್.)');
+  static const kidsHi = L('Hi! 👋 Let\'s have fun safely.',
+      'नमस्ते! 👋 चलो सुरक्षित मज़े करें।', 'ನಮಸ್ಕಾರ! 👋 ಸುರಕ್ಷಿತವಾಗಿ ಮಜಾ ಮಾಡೋಣ.');
 }

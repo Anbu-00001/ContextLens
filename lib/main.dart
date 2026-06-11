@@ -7,6 +7,7 @@ import 'overlay/overlay_app.dart';
 import 'screens/home_screen.dart';
 import 'screens/other_screens.dart';
 import 'theme.dart';
+import 'widgets/quick_hide.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
   String _lang = 'en';
+  bool _hidden = false;
 
   @override
   void initState() {
@@ -87,7 +89,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       SettingsScreen(lang: _lang, onLanguageChanged: _onLanguageChanged),
     ];
 
-    return Scaffold(
+    final scaffold = Scaffold(
       body: IndexedStack(index: _currentIndex, children: pages),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
@@ -116,6 +118,25 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           ],
         ),
       ),
+    );
+
+    return Stack(
+      children: [
+        scaffold,
+        // Always-visible Quick Hide shield (Feature 1.2).
+        if (!_hidden)
+          Positioned(
+            left: 16,
+            bottom: 92,
+            child: QuickHideShield(onHide: () => setState(() => _hidden = true)),
+          ),
+        // Calculator decoy cover.
+        if (_hidden)
+          Positioned.fill(
+            child: CalculatorDecoy(
+                onUnhide: () => setState(() => _hidden = false)),
+          ),
+      ],
     );
   }
 }

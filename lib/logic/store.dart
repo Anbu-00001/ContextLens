@@ -13,6 +13,9 @@ class Keys {
   static const history = 'history_json'; // JSON list of history entries
   static const lastSpyCount = 'last_spy_count'; // suspected count from last scan
   static const lastScanAt = 'last_scan_at'; // millis of last spyware scan
+  static const badges = 'earned_badges'; // CSV of badge ids
+  static const trusted = 'trusted_contacts'; // JSON list {name, number}
+  static const kidsPin = 'kids_pin'; // 4-digit exit PIN for Kids Mode
 }
 
 class HistoryEntry {
@@ -126,4 +129,42 @@ class Store {
     if (!p.containsKey(Keys.lastScanAt)) return null;
     return p.getInt(Keys.lastSpyCount) ?? 0;
   }
+
+  // ── Badges ──
+  static Future<Set<String>> earnedBadges() async {
+    final raw = (await _prefs()).getString(Keys.badges) ?? '';
+    return raw.split(',').where((s) => s.isNotEmpty).toSet();
+  }
+
+  static Future<bool> awardBadge(String id) async {
+    final p = await _prefs();
+    final set = await earnedBadges();
+    if (set.contains(id)) return false; // already had it
+    set.add(id);
+    await p.setString(Keys.badges, set.join(','));
+    return true; // newly earned
+  }
+
+  // ── Trusted contacts ──
+  static Future<List<Map<String, String>>> trustedContacts() async {
+    final raw = (await _prefs()).getString(Keys.trusted);
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      return (jsonDecode(raw) as List)
+          .map((e) => (e as Map).map((k, v) => MapEntry('$k', '$v')))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> saveTrusted(List<Map<String, String>> list) async =>
+      (await _prefs()).setString(Keys.trusted, jsonEncode(list));
+
+  // ── Kids Mode PIN ──
+  static Future<String?> kidsPin() async =>
+      (await _prefs()).getString(Keys.kidsPin);
+
+  static Future<void> setKidsPin(String pin) async =>
+      (await _prefs()).setString(Keys.kidsPin, pin);
 }
