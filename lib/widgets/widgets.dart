@@ -2,7 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../logic/i18n.dart';
 import '../logic/risk_engine.dart';
+import '../logic/safety_resources.dart';
 import '../theme.dart';
+
+// Permission categories that amount to tracking/profiling — DPDP Act prohibits
+// these for children (<18).
+const Set<String> _trackingCats = {
+  'location',
+  'bg_location',
+  'phone_state',
+  'sensors',
+  'nearby',
+};
 
 // ── App Logo ────────────────────────────────────────────────────────────────
 class CLLogo extends StatelessWidget {
@@ -385,6 +396,27 @@ class CategoryCard extends StatelessWidget {
               ),
             ),
           ),
+          // DPDP Act citation when a child meets a tracking-type permission.
+          if (userMode == 'child' && _trackingCats.contains(category.id))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.gavel_rounded,
+                      size: 14, color: CLColors.purple),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(S.dpdpChildNote.of(lang),
+                        style: const TextStyle(
+                            fontSize: 11,
+                            height: 1.35,
+                            fontWeight: FontWeight.w600,
+                            color: CLColors.purple)),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -579,6 +611,84 @@ class _PrivChip extends StatelessWidget {
             style: const TextStyle(
                 fontSize: 11, fontWeight: FontWeight.w600, color: CLColors.green)),
       ],
+    );
+  }
+}
+
+// ── Help Resources (official Indian helplines) ──────────────────────────────
+class HelpResourcesList extends StatelessWidget {
+  final String lang;
+  const HelpResourcesList({super.key, required this.lang});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text(S.helpIntro.of(lang),
+              style: const TextStyle(fontSize: 12, color: CLColors.textMuted)),
+        ),
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 14),
+          child: Column(
+            children: [
+              for (int i = 0; i < helpResources.length; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 58),
+                _HelpRow(res: helpResources[i], lang: lang),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HelpRow extends StatelessWidget {
+  final HelpResource res;
+  final String lang;
+  const _HelpRow({required this.res, required this.lang});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => launchHelp(res.action),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                  color: res.isPhone ? CLColors.greenLight : CLColors.blueLight,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(res.icon,
+                  size: 18,
+                  color: res.isPhone ? CLColors.green : CLColors.blue),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(res.title.of(lang),
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: CLColors.textPrimary)),
+                  Text(res.subtitle.of(lang),
+                      style: const TextStyle(
+                          fontSize: 11, color: CLColors.textMuted)),
+                ],
+              ),
+            ),
+            Icon(res.isPhone ? Icons.call_rounded : Icons.open_in_new_rounded,
+                size: 18, color: CLColors.textMuted),
+          ],
+        ),
+      ),
     );
   }
 }

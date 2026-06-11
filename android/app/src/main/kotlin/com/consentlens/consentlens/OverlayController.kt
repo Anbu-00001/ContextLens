@@ -60,6 +60,15 @@ object OverlayController {
                     detachView(app)
                     result.success(null)
                 }
+                "openHelp" -> {
+                    detachView(app)
+                    val intent = app.packageManager
+                        .getLaunchIntentForPackage(app.packageName)
+                        ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        ?.putExtra("open", "help")
+                    if (intent != null) app.startActivity(intent)
+                    result.success(null)
+                }
                 "openAppDetails" -> {
                     val pkg = call.argument<String>("pkg")
                     if (pkg != null) {

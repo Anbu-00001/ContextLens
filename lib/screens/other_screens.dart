@@ -555,6 +555,10 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
           ),
 
+          // ── Safety & help (always available) ──
+          SectionLabel(S.safetyHelp.of(lang)),
+          HelpResourcesList(lang: lang),
+
           // ── Privacy ──
           SectionLabel('Privacy'),
           Card(

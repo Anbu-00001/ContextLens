@@ -9,8 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../logic/i18n.dart';
+import '../logic/native.dart';
 import '../logic/risk_engine.dart';
 import '../logic/speech.dart';
+import '../logic/stalkerware.dart';
 import '../logic/store.dart';
 import '../theme.dart';
 import '../widgets/widgets.dart';
@@ -26,6 +28,7 @@ class OverlayApp extends StatefulWidget {
 
 class _OverlayAppState extends State<OverlayApp> {
   AppReport? _report;
+  SpyVerdict? _spy;
   String _lang = 'en';
   String _userMode = 'adult';
   String _ageTab = 'adults'; // which age group's risks are expanded
@@ -47,22 +50,35 @@ class _OverlayAppState extends State<OverlayApp> {
     if (payload == null || payload.isEmpty) return;
     final m = (jsonDecode(payload) as Map).cast<String, dynamic>();
     final isWeb = (m['kind'] as String?) == 'web';
-    final report = isWeb
-        ? buildWebReport(
-            m['site'] as String,
-            ((m['perms'] as List?) ?? []).cast<String>(),
-          )
-        : buildReport(
-            m['pkg'] as String,
-            m['name'] as String,
-            ((m['perms'] as List?) ?? []).cast<String>(),
-          );
+    SpyVerdict? spy;
+    final AppReport report;
+    if (isWeb) {
+      report = buildWebReport(
+        m['site'] as String,
+        ((m['perms'] as List?) ?? []).cast<String>(),
+      );
+    } else {
+      final perms = ((m['perms'] as List?) ?? []).cast<String>();
+      report = buildReport(m['pkg'] as String, m['name'] as String, perms);
+      // Live stalkerware check on the app being opened.
+      spy = assessStalkerware(ScannedApp(
+        packageName: m['pkg'] as String,
+        label: m['name'] as String,
+        permissions: perms,
+        hasLauncher: (m['hasLauncher'] as bool?) ?? true,
+        isSystem: (m['system'] as bool?) ?? false,
+        isDeviceAdmin: (m['deviceAdmin'] as bool?) ?? false,
+        hasAccessibility: (m['accessibility'] as bool?) ?? false,
+      ));
+      if (spy.level == SpyLevel.none) spy = null;
+    }
     final lang = await Store.language();
     final mode = await Store.userMode();
     final voice = await Store.voiceOn();
 
     setState(() {
       _report = report;
+      _spy = spy;
       _lang = lang;
       _userMode = mode;
       _ageTab = mode == 'child' ? 'kids' : 'adults';
@@ -85,7 +101,9 @@ class _OverlayAppState extends State<OverlayApp> {
         .replaceAll('{app}', r.appName)
         .replaceAll('{n}', '${r.categories.length}')
         .replaceAll('{risk}', r.overallLabel.of(lang));
-    if (r.shady) {
+    if (_spy?.suspected == true) {
+      text = '${S.ttsSpyWarn.of(lang)} $text';
+    } else if (r.shady) {
       text = '${S.ttsThreat.of(lang)} $text';
     } else if (mode == 'child' && r.kidsFit != Fit.ok) {
       text = '${S.ttsChildWarn.of(lang)} $text';
@@ -125,8 +143,9 @@ class _OverlayAppState extends State<OverlayApp> {
 
   Widget _buildSheet(AppReport r) {
     final isChild = _userMode == 'child';
-    final severe = r.shady || (isChild && r.kidsFit != Fit.ok);
-    final maxH = MediaQuery.of(context).size.height * (severe ? 0.88 : 0.78);
+    final severe =
+        r.shady || _spy?.suspected == true || (isChild && r.kidsFit != Fit.ok);
+    final maxH = MediaQuery.of(context).size.height * (severe ? 0.9 : 0.78);
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxH),
@@ -138,12 +157,18 @@ class _OverlayAppState extends State<OverlayApp> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _header(r, severe),
-          if (r.shady) _threatBanner(r) else if (severe) _childAlertBanner(),
+          if (_spy?.suspected == true)
+            _spyBanner()
+          else if (r.shady)
+            _threatBanner(r)
+          else if (isChild && r.kidsFit != Fit.ok)
+            _childAlertBanner(),
           Flexible(
             child: ListView(
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               children: [
+                if (_spy?.suspected == true) _spyDetails(),
                 if (r.isWebsite && !r.shady) _websiteNote(),
                 if (r.isBrowser) _browserNote(),
                 _ageFitSection(r),
@@ -251,6 +276,98 @@ class _OverlayAppState extends State<OverlayApp> {
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _spyBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: CLColors.red,
+      child: Row(
+        children: [
+          const Text('🕵️', style: TextStyle(fontSize: 24)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(S.spySuspected.of(_lang),
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: Colors.white)),
+                Text(S.spyCardTitle.of(_lang),
+                    style: const TextStyle(
+                        fontSize: 12.5, height: 1.3, color: Colors.white)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _spyDetails() {
+    final spy = _spy!;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CLColors.amberLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEBD08A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...spy.signals.map((s) => Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(color: CLColors.amberDark)),
+                    Expanded(
+                        child: Text(s.of(_lang),
+                            style: const TextStyle(
+                                fontSize: 12,
+                                height: 1.4,
+                                color: CLColors.amberDark))),
+                  ],
+                ),
+              )),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Text('💛', style: TextStyle(fontSize: 15)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(S.safetyFirstBody.of(_lang),
+                    style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: CLColors.amberDark)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                _overlayCh.invokeMethod('openHelp');
+                _close();
+              },
+              icon: const Icon(Icons.support_agent_rounded, size: 18),
+              label: Text(S.getHelp.of(_lang)),
+              style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 11)),
             ),
           ),
         ],

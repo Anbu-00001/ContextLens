@@ -154,17 +154,58 @@ class MonitorService : Service() {
         return try {
             val pm = packageManager
             val info = pm.getPackageInfo(pkg, PackageManager.GET_PERMISSIONS)
-            val label = info.applicationInfo?.loadLabel(pm)?.toString() ?: pkg
+            val appInfo = info.applicationInfo
+            val label = appInfo?.loadLabel(pm)?.toString() ?: pkg
             val perms = JSONArray()
             info.requestedPermissions?.forEach { perms.put(it) }
+            val isSystem = appInfo != null &&
+                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+            val launchIntent = Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER).setPackage(pkg)
+            val hasLauncher =
+                pm.queryIntentActivities(launchIntent, 0).isNotEmpty()
             JSONObject()
                 .put("pkg", pkg)
                 .put("name", label)
                 .put("perms", perms)
+                .put("hasLauncher", hasLauncher)
+                .put("system", isSystem)
+                .put("deviceAdmin", deviceAdminPkgs().contains(pkg))
+                .put("accessibility", accessibilityPkgs().contains(pkg))
                 .toString()
         } catch (_: Exception) {
             null
         }
+    }
+
+    private var _adminPkgs: Set<String>? = null
+    private fun deviceAdminPkgs(): Set<String> {
+        _adminPkgs?.let { return it }
+        val set = HashSet<String>()
+        try {
+            val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE)
+                    as android.app.admin.DevicePolicyManager
+            dpm.activeAdmins?.forEach { set.add(it.packageName) }
+        } catch (_: Exception) {
+        }
+        _adminPkgs = set
+        return set
+    }
+
+    private var _a11yPkgs: Set<String>? = null
+    private fun accessibilityPkgs(): Set<String> {
+        _a11yPkgs?.let { return it }
+        val set = HashSet<String>()
+        try {
+            val am = getSystemService(Context.ACCESSIBILITY_SERVICE)
+                    as android.view.accessibility.AccessibilityManager
+            am.installedAccessibilityServiceList?.forEach {
+                it.resolveInfo?.serviceInfo?.packageName?.let { p -> set.add(p) }
+            }
+        } catch (_: Exception) {
+        }
+        _a11yPkgs = set
+        return set
     }
 
     private fun resolveLaunchers(): Set<String> {

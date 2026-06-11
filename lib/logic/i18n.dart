@@ -181,4 +181,54 @@ class S {
   static const goBack = L('Go back', 'वापस जाएँ', 'ಹಿಂದೆ ಹೋಗಿ');
   static const proceedAnyway =
       L('Proceed anyway', 'फिर भी आगे बढ़ें', 'ಹೇಗಾದರೂ ಮುಂದುವರಿಯಿರಿ');
+
+  // Stalkerware / safety module
+  static const safetyScan = L('Spyware safety scan', 'स्पाईवेयर सुरक्षा स्कैन',
+      'ಸ್ಪೈವೇರ್ ಸುರಕ್ಷತಾ ಸ್ಕ್ಯಾನ್');
+  static const safetyScanSub = L(
+      'Check if any app may be secretly watching you',
+      'जाँचें कि कोई ऐप चुपके से आप पर नज़र तो नहीं रख रहा',
+      'ಯಾವುದೇ ಆ್ಯಪ್ ರಹಸ್ಯವಾಗಿ ನಿಮ್ಮ ಮೇಲೆ ಕಣ್ಣಿಡುತ್ತಿದೆಯೇ ಪರಿಶೀಲಿಸಿ');
+  static const scanning = L('Scanning your apps…', 'आपके ऐप्स स्कैन हो रहे हैं…',
+      'ನಿಮ್ಮ ಆ್ಯಪ್‌ಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ…');
+  static const scanClean = L(
+      'No spyware-like apps found. Stay alert anyway.',
+      'कोई स्पाईवेयर जैसा ऐप नहीं मिला। फिर भी सतर्क रहें।',
+      'ಸ್ಪೈವೇರ್‌ನಂತಹ ಆ್ಯಪ್ ಸಿಗಲಿಲ್ಲ. ಆದರೂ ಎಚ್ಚರವಾಗಿರಿ.');
+  static const spySuspected = L('POSSIBLE SPYWARE', 'संभावित स्पाईवेयर',
+      'ಸಂಭಾವ್ಯ ಸ್ಪೈವೇರ್');
+  static const spyElevated = L('Watches a lot', 'बहुत कुछ देखता है',
+      'ಬಹಳಷ್ಟು ನೋಡುತ್ತದೆ');
+  static const spyCardTitle = L('This app may be secretly monitoring you',
+      'यह ऐप चुपके से आप पर नज़र रख सकता है',
+      'ಈ ಆ್ಯಪ್ ರಹಸ್ಯವಾಗಿ ನಿಮ್ಮ ಮೇಲೆ ಕಣ್ಣಿಡುತ್ತಿರಬಹುದು');
+  static const whySuspicious =
+      L('Why it looks risky', 'यह जोखिम भरा क्यों लगता है', 'ಇದು ಯಾಕೆ ಅಪಾಯಕಾರಿ');
+  static const spyDisclaimer = L(
+      'This is a warning sign, not proof. Some genuine apps need these too.',
+      'यह चेतावनी का संकेत है, सबूत नहीं। कुछ असली ऐप्स को भी इनकी ज़रूरत होती है।',
+      'ಇದು ಎಚ್ಚರಿಕೆ ಸೂಚನೆ, ಪುರಾವೆಯಲ್ಲ. ಕೆಲವು ನಿಜವಾದ ಆ್ಯಪ್‌ಗಳಿಗೂ ಇವು ಬೇಕು.');
+  // Safety-first guidance — NEVER tell the user to just uninstall.
+  static const safetyFirstTitle =
+      L('Your safety comes first', 'आपकी सुरक्षा सबसे पहले', 'ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಮೊದಲು');
+  static const safetyFirstBody = L(
+      'If someone may be tracking you, do NOT remove the app yet — they could be alerted. First reach out for help and save proof (screenshots).',
+      'अगर कोई आप पर नज़र रख रहा हो, तो ऐप अभी न हटाएँ — उसे पता चल सकता है। पहले मदद लें और सबूत (स्क्रीनशॉट) सहेजें।',
+      'ಯಾರಾದರೂ ನಿಮ್ಮನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುತ್ತಿದ್ದರೆ, ಆ್ಯಪ್ ಅನ್ನು ಈಗ ತೆಗೆಯಬೇಡಿ — ಅವರಿಗೆ ತಿಳಿಯಬಹುದು. ಮೊದಲು ಸಹಾಯ ಪಡೆಯಿರಿ, ಪುರಾವೆ (ಸ್ಕ್ರೀನ್‌ಶಾಟ್) ಉಳಿಸಿ.');
+  static const getHelp = L('Get help', 'मदद लें', 'ಸಹಾಯ ಪಡೆಯಿರಿ');
+  static const safetyHelp =
+      L('Safety & help', 'सुरक्षा और मदद', 'ಸುರಕ್ಷತೆ ಮತ್ತು ಸಹಾಯ');
+  static const helpIntro = L(
+      'Free, official Indian helplines. Tap to call or open.',
+      'मुफ़्त, आधिकारिक भारतीय हेल्पलाइन। कॉल करने या खोलने के लिए टैप करें।',
+      'ಉಚಿತ, ಅಧಿಕೃತ ಭಾರತೀಯ ಸಹಾಯವಾಣಿಗಳು. ಕರೆ ಅಥವಾ ತೆರೆಯಲು ಟ್ಯಾಪ್ ಮಾಡಿ.');
+  static const ttsSpyWarn = L(
+      'Warning. This app may be secretly monitoring you. Your safety comes first. Do not remove it yet. Please reach out for help.',
+      'सावधान। यह ऐप चुपके से आप पर नज़र रख सकता है। आपकी सुरक्षा सबसे पहले है। इसे अभी न हटाएँ। कृपया मदद लें।',
+      'ಎಚ್ಚರಿಕೆ. ಈ ಆ್ಯಪ್ ರಹಸ್ಯವಾಗಿ ನಿಮ್ಮ ಮೇಲೆ ಕಣ್ಣಿಡುತ್ತಿರಬಹುದು. ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಮೊದಲು. ಈಗ ತೆಗೆಯಬೇಡಿ. ದಯವಿಟ್ಟು ಸಹಾಯ ಪಡೆಯಿರಿ.');
+  static const hiddenApp = L('Hidden app', 'छिपा हुआ ऐप', 'ಮರೆಯಾದ ಆ್ಯಪ್');
+  static const dpdpChildNote = L(
+      "Under India's DPDP Act, tracking children is not allowed.",
+      'भारत के DPDP कानून के तहत बच्चों को ट्रैक करना मना है।',
+      'ಭಾರತದ DPDP ಕಾಯ್ದೆ ಪ್ರಕಾರ ಮಕ್ಕಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು ನಿಷಿದ್ಧ.');
 }

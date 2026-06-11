@@ -11,6 +11,8 @@ class Keys {
   static const userMode = 'user_mode'; // 'adult' | 'child' (set by VerifyActivity)
   static const lastVerifiedAt = 'last_verified_at'; // millis, set by Kotlin
   static const history = 'history_json'; // JSON list of history entries
+  static const lastSpyCount = 'last_spy_count'; // suspected count from last scan
+  static const lastScanAt = 'last_scan_at'; // millis of last spyware scan
 }
 
 class HistoryEntry {
@@ -112,4 +114,16 @@ class Store {
 
   static Future<void> clearHistory() async =>
       (await _prefs()).remove(Keys.history);
+
+  static Future<void> saveScanResult(int suspectedCount) async {
+    final p = await _prefs();
+    await p.setInt(Keys.lastSpyCount, suspectedCount);
+    await p.setInt(Keys.lastScanAt, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  static Future<int?> lastSpyCount() async {
+    final p = await _prefs();
+    if (!p.containsKey(Keys.lastScanAt)) return null;
+    return p.getInt(Keys.lastSpyCount) ?? 0;
+  }
 }

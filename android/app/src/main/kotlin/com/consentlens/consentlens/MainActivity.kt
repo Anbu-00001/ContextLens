@@ -80,6 +80,7 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "listApps" -> result.success(listApps())
+                    "scanInstalledApps" -> result.success(scanInstalledApps())
                     else -> result.notImplemented()
                 }
             }
@@ -107,6 +108,61 @@ class MainActivity : FlutterActivity() {
             )
         }
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    /**
+     * Full scan for the stalkerware/safety module: every package (user + system)
+     * with its requested permissions and the high-signal flags — whether it has
+     * a launcher icon (hidden apps are a red flag), is a system app, is an
+     * active device admin, or provides an accessibility service.
+     */
+    private fun scanInstalledApps(): List<Map<String, Any>> {
+        val pm = packageManager
+
+        val launcherPkgs = pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0
+        ).mapNotNull { it.activityInfo?.packageName }.toHashSet()
+
+        val adminPkgs = HashSet<String>()
+        try {
+            val dpm = getSystemService(Context.DEVICE_POLICY_SERVICE)
+                    as android.app.admin.DevicePolicyManager
+            dpm.activeAdmins?.forEach { adminPkgs.add(it.packageName) }
+        } catch (_: Exception) {
+        }
+
+        val a11yPkgs = HashSet<String>()
+        try {
+            val am = getSystemService(Context.ACCESSIBILITY_SERVICE)
+                    as android.view.accessibility.AccessibilityManager
+            am.installedAccessibilityServiceList?.forEach {
+                it.resolveInfo?.serviceInfo?.packageName?.let { p -> a11yPkgs.add(p) }
+            }
+        } catch (_: Exception) {
+        }
+
+        val out = ArrayList<Map<String, Any>>()
+        val packages = pm.getInstalledPackages(PackageManager.GET_PERMISSIONS)
+        for (info in packages) {
+            val pkg = info.packageName ?: continue
+            if (pkg == packageName) continue
+            val appInfo = info.applicationInfo ?: continue
+            val isSystem =
+                (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+            val label = appInfo.loadLabel(pm)?.toString() ?: pkg
+            out.add(
+                mapOf(
+                    "pkg" to pkg,
+                    "label" to label,
+                    "perms" to (info.requestedPermissions?.toList() ?: emptyList<String>()),
+                    "hasLauncher" to launcherPkgs.contains(pkg),
+                    "system" to isSystem,
+                    "deviceAdmin" to adminPkgs.contains(pkg),
+                    "accessibility" to a11yPkgs.contains(pkg)
+                )
+            )
+        }
+        return out
     }
 
     private fun listApps(): List<Map<String, Any>> {
