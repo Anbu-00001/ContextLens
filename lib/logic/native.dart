@@ -35,6 +35,12 @@ class Native {
   static Future<bool> isMonitorRunning() async =>
       (await _ch.invokeMethod<bool>('isMonitorRunning')) ?? false;
 
+  static Future<bool> hasAccessibility() async =>
+      (await _ch.invokeMethod<bool>('hasAccessibility')) ?? false;
+
+  static Future<void> openAccessibilitySettings() =>
+      _ch.invokeMethod('openAccessibilitySettings');
+
   static Future<void> verifyNow() => _ch.invokeMethod('verifyNow');
 
   static Future<void> openAppDetails(String pkg) =>

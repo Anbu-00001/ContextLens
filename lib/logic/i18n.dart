@@ -144,4 +144,41 @@ class S {
   static const localOnlySub = L('No data ever leaves your device',
       'कोई डेटा डिवाइस से बाहर नहीं जाता', 'ಯಾವುದೇ ಡೇಟಾ ಸಾಧನದಿಂದ ಹೊರಹೋಗುವುದಿಲ್ಲ');
   static const seen = L('Seen', 'देखा गया', 'ನೋಡಲಾಗಿದೆ');
+
+  // Website / threat
+  static const websiteWants = L('This website is asking for:',
+      'यह वेबसाइट माँग रही है:', 'ಈ ವೆಬ್‌ಸೈಟ್ ಕೇಳುತ್ತಿದೆ:');
+  static const dangerousSite = L('DANGEROUS WEBSITE', 'खतरनाक वेबसाइट',
+      'ಅಪಾಯಕಾರಿ ವೆಬ್‌ಸೈಟ್');
+  static const threatWarn = L(
+      'This may be a scam or fake site. Do NOT allow anything or enter passwords.',
+      'यह ठगी या नकली साइट हो सकती है। कुछ भी अनुमति न दें और पासवर्ड न डालें।',
+      'ಇದು ವಂಚನೆ ಅಥವಾ ನಕಲಿ ಸೈಟ್ ಆಗಿರಬಹುದು. ಯಾವುದನ್ನೂ ಅನುಮತಿಸಬೇಡಿ, ಪಾಸ್‌ವರ್ಡ್ ಹಾಕಬೇಡಿ.');
+  static const ttsThreat = L(
+      'Warning! This website looks dangerous. Do not allow this permission or type any password.',
+      'सावधान! यह वेबसाइट खतरनाक लगती है। यह अनुमति न दें और कोई पासवर्ड न लिखें।',
+      'ಎಚ್ಚರಿಕೆ! ಈ ವೆಬ್‌ಸೈಟ್ ಅಪಾಯಕಾರಿ ಕಾಣುತ್ತದೆ. ಈ ಅನುಮತಿ ನೀಡಬೇಡಿ, ಪಾಸ್‌ವರ್ಡ್ ಬರೆಯಬೇಡಿ.');
+  static const safeBrowser =
+      L('Safe Browser', 'सुरक्षित ब्राउज़र', 'ಸುರಕ್ಷಿತ ಬ್ರೌಸರ್');
+  static const safeBrowserSub = L(
+      'Browse with ConsentLens checking every site & permission',
+      'हर साइट और अनुमति जाँचते हुए ConsentLens के साथ ब्राउज़ करें',
+      'ಪ್ರತಿ ಸೈಟ್ ಮತ್ತು ಅನುಮತಿ ಪರಿಶೀಲಿಸುತ್ತಾ ConsentLens ಜೊತೆ ಬ್ರೌಸ್ ಮಾಡಿ');
+  static const webMonitor = L('Website permission watch',
+      'वेबसाइट अनुमति निगरानी', 'ವೆಬ್‌ಸೈಟ್ ಅನುಮತಿ ಕಣ್ಗಾವಲು');
+  static const webMonitorSub = L(
+      'Warn me when any website in Chrome asks for a permission',
+      'जब Chrome में कोई वेबसाइट अनुमति माँगे तो मुझे चेताएँ',
+      'Chrome ನಲ್ಲಿ ಯಾವುದೇ ವೆಬ್‌ಸೈಟ್ ಅನುಮತಿ ಕೇಳಿದಾಗ ನನ್ನನ್ನು ಎಚ್ಚರಿಸಿ');
+  static const blocked = L('Blocked', 'अवरुद्ध', 'ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ');
+  static const allowOnce = L('Allow once', 'एक बार अनुमति दें', 'ಒಮ್ಮೆ ಅನುಮತಿಸಿ');
+  static const block = L('Block', 'रोकें', 'ನಿರ್ಬಂಧಿಸಿ');
+  static const enterUrl = L('Search or type a website',
+      'खोजें या वेबसाइट टाइप करें', 'ಹುಡುಕಿ ಅಥವಾ ವೆಬ್‌ಸೈಟ್ ಟೈಪ್ ಮಾಡಿ');
+  static const siteBlockedTitle =
+      L('Site blocked for safety', 'सुरक्षा हेतु साइट रोकी गई',
+          'ಸುರಕ್ಷತೆಗಾಗಿ ಸೈಟ್ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ');
+  static const goBack = L('Go back', 'वापस जाएँ', 'ಹಿಂದೆ ಹೋಗಿ');
+  static const proceedAnyway =
+      L('Proceed anyway', 'फिर भी आगे बढ़ें', 'ಹೇಗಾದರೂ ಮುಂದುವರಿಯಿರಿ');
 }

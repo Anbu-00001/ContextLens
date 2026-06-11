@@ -6,6 +6,7 @@ import '../logic/speech.dart';
 import '../logic/store.dart';
 import '../theme.dart';
 import '../widgets/widgets.dart';
+import 'safe_browser.dart';
 
 class HomeScreen extends StatefulWidget {
   final String lang;
@@ -20,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _usageOk = false;
   bool _overlayOk = false;
+  bool _accessibilityOk = false;
   bool _running = false;
   String _mode = 'adult';
   List<HistoryEntry> _recent = [];
@@ -45,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _refresh() async {
     final usage = await Native.hasUsageAccess();
     final overlay = await Native.hasOverlayPermission();
+    final accessibility = await Native.hasAccessibility();
     final running = await Native.isMonitorRunning();
     final mode = await Store.userMode();
     final history = await Store.history();
@@ -52,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     setState(() {
       _usageOk = usage;
       _overlayOk = overlay;
+      _accessibilityOk = accessibility;
       _running = running;
       _mode = mode;
       _recent = history.take(3).toList();
@@ -201,6 +205,72 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ),
 
+            // ── Website permission watch (primary web path) ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: _setupRow(
+                  ok: _accessibilityOk,
+                  title: S.webMonitor.of(lang),
+                  subtitle: S.webMonitorSub.of(lang),
+                  onGrant: Native.openAccessibilitySettings,
+                  lang: lang,
+                  icon: Icons.travel_explore_rounded,
+                ),
+              ),
+            ),
+
+            // ── Safe Browser (fallback web path) ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => SafeBrowserScreen(lang: lang)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: CLColors.blueLight,
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: const Icon(Icons.public_rounded,
+                            color: CLColors.blue, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(S.safeBrowser.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: CLColors.textPrimary)),
+                            Text(S.safeBrowserSub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CLColors.textMuted,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: CLColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             // ── Identity verification ──
             Card(
               margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
@@ -305,11 +375,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     required String subtitle,
     required Future<void> Function() onGrant,
     required String lang,
+    IconData? icon,
   }) {
     return Row(
       children: [
-        Icon(ok ? Icons.check_circle_rounded : Icons.error_rounded,
-            size: 20, color: ok ? CLColors.green : CLColors.amber),
+        Icon(
+            icon ??
+                (ok ? Icons.check_circle_rounded : Icons.error_rounded),
+            size: 20,
+            color: ok ? CLColors.green : CLColors.amber),
         const SizedBox(width: 10),
         Expanded(
           child: Column(

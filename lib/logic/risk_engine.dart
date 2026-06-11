@@ -2,6 +2,7 @@
 // 100% local, rule-based classification. No network calls, ever.
 
 import 'i18n.dart';
+import 'threat.dart';
 
 enum Risk { low, medium, high }
 
@@ -398,6 +399,9 @@ class AppReport {
   final List<PermCategory> categories;
   final bool overallHigh; // HIGH vs LOW
   final Fit kidsFit, teensFit, adultsFit;
+  final bool isWebsite; // came from a website permission prompt
+  final bool shady; // domain flagged as a likely threat
+  final L? threatReason;
 
   const AppReport({
     required this.packageName,
@@ -408,34 +412,70 @@ class AppReport {
     required this.kidsFit,
     required this.teensFit,
     required this.adultsFit,
+    this.isWebsite = false,
+    this.shady = false,
+    this.threatReason,
   });
 
   L get overallLabel => overallHigh ? S.riskHigh : S.riskLow;
+}
 
-  Map<String, dynamic> toJson() => {
-        'pkg': packageName,
-        'name': appName,
-        'browser': isBrowser,
-        'cats': categories.map((c) => c.id).toList(),
-        'high': overallHigh,
-        'kids': kidsFit.index,
-        'teens': teensFit.index,
-        'adults': adultsFit.index,
-      };
+// ── Website permission report ──────────────────────────────────────────────
+// Maps the web permission keywords surfaced by a browser prompt (or our own
+// Safe Browser) onto the same category catalog, then layers domain-threat
+// heuristics on top.
+const Map<String, String> webPermToCategory = {
+  'location': 'location',
+  'camera': 'camera',
+  'microphone': 'microphone',
+  'notifications': 'notifications',
+  'storage': 'storage',
+  'midi': 'nearby',
+  'bluetooth': 'nearby',
+  'usb': 'phone_state',
+  'clipboard': 'storage',
+};
 
-  static AppReport fromJson(Map<String, dynamic> j) => AppReport(
-        packageName: j['pkg'] as String,
-        appName: j['name'] as String,
-        isBrowser: (j['browser'] as bool?) ?? false,
-        categories: ((j['cats'] as List?) ?? [])
-            .map((id) => categoryById(id as String))
-            .whereType<PermCategory>()
-            .toList(),
-        overallHigh: (j['high'] as bool?) ?? false,
-        kidsFit: Fit.values[(j['kids'] as int?) ?? 0],
-        teensFit: Fit.values[(j['teens'] as int?) ?? 0],
-        adultsFit: Fit.values[(j['adults'] as int?) ?? 0],
-      );
+AppReport buildWebReport(String site, List<String> webPerms) {
+  final ids = <String>{};
+  for (final p in webPerms) {
+    final id = webPermToCategory[p.toLowerCase()];
+    if (id != null) ids.add(id);
+  }
+  final cats = catalog.where((c) => ids.contains(c.id)).toList()
+    ..sort((a, b) => b.risk.index.compareTo(a.risk.index));
+
+  final verdict = assessDomain(site);
+  final highCount = cats.where((c) => c.risk == Risk.high).length;
+  final medCount = cats.where((c) => c.risk == Risk.medium).length;
+
+  // A flagged domain is HIGH regardless of which permission it asked for.
+  final overallHigh =
+      verdict.shady || highCount >= 1 || medCount >= 2;
+
+  // Shady site => unsafe for everyone; otherwise mirror the app rules.
+  final Fit kids = verdict.shady || highCount > 0
+      ? Fit.no
+      : (medCount > 0 ? Fit.caution : Fit.ok);
+  final Fit teens = verdict.shady
+      ? Fit.no
+      : (overallHigh || highCount > 0 ? Fit.caution : Fit.ok);
+  final Fit adultsF =
+      verdict.shady ? Fit.no : (overallHigh ? Fit.caution : Fit.ok);
+
+  return AppReport(
+    packageName: site,
+    appName: site,
+    isBrowser: false,
+    categories: cats,
+    overallHigh: overallHigh,
+    kidsFit: kids,
+    teensFit: teens,
+    adultsFit: adultsF,
+    isWebsite: true,
+    shady: verdict.shady,
+    threatReason: verdict.reason,
+  );
 }
 
 const Set<String> browserPackages = {

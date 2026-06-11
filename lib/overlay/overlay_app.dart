@@ -46,11 +46,17 @@ class _OverlayAppState extends State<OverlayApp> {
   Future<void> _load(String? payload) async {
     if (payload == null || payload.isEmpty) return;
     final m = (jsonDecode(payload) as Map).cast<String, dynamic>();
-    final report = buildReport(
-      m['pkg'] as String,
-      m['name'] as String,
-      ((m['perms'] as List?) ?? []).cast<String>(),
-    );
+    final isWeb = (m['kind'] as String?) == 'web';
+    final report = isWeb
+        ? buildWebReport(
+            m['site'] as String,
+            ((m['perms'] as List?) ?? []).cast<String>(),
+          )
+        : buildReport(
+            m['pkg'] as String,
+            m['name'] as String,
+            ((m['perms'] as List?) ?? []).cast<String>(),
+          );
     final lang = await Store.language();
     final mode = await Store.userMode();
     final voice = await Store.voiceOn();
@@ -79,7 +85,9 @@ class _OverlayAppState extends State<OverlayApp> {
         .replaceAll('{app}', r.appName)
         .replaceAll('{n}', '${r.categories.length}')
         .replaceAll('{risk}', r.overallLabel.of(lang));
-    if (mode == 'child' && r.kidsFit != Fit.ok) {
+    if (r.shady) {
+      text = '${S.ttsThreat.of(lang)} $text';
+    } else if (mode == 'child' && r.kidsFit != Fit.ok) {
       text = '${S.ttsChildWarn.of(lang)} $text';
     }
     Speech.speak(text, lang);
@@ -117,7 +125,7 @@ class _OverlayAppState extends State<OverlayApp> {
 
   Widget _buildSheet(AppReport r) {
     final isChild = _userMode == 'child';
-    final severe = isChild && r.kidsFit != Fit.ok;
+    final severe = r.shady || (isChild && r.kidsFit != Fit.ok);
     final maxH = MediaQuery.of(context).size.height * (severe ? 0.88 : 0.78);
 
     return Container(
@@ -130,12 +138,13 @@ class _OverlayAppState extends State<OverlayApp> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _header(r, severe),
-          if (severe) _childAlertBanner(),
+          if (r.shady) _threatBanner(r) else if (severe) _childAlertBanner(),
           Flexible(
             child: ListView(
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               children: [
+                if (r.isWebsite && !r.shady) _websiteNote(),
                 if (r.isBrowser) _browserNote(),
                 _ageFitSection(r),
                 SectionLabel(
@@ -243,6 +252,77 @@ class _OverlayAppState extends State<OverlayApp> {
                   fontWeight: FontWeight.w700,
                   color: Colors.white),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _threatBanner(AppReport r) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: CLColors.red,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🛑', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 10),
+              Text(
+                S.dangerousSite.of(_lang),
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                    color: Colors.white),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            S.threatWarn.of(_lang),
+            style: const TextStyle(
+                fontSize: 13, height: 1.4, color: Colors.white),
+          ),
+          if (r.threatReason != null) ...[
+            const SizedBox(height: 6),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '⚠️ ${r.threatReason!.of(_lang)}',
+                style: const TextStyle(
+                    fontSize: 12, color: Colors.white, height: 1.35),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _websiteNote() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: CLColors.blueLight,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          const Text('🌐', style: TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(S.websiteWants.of(_lang),
+                style: const TextStyle(
+                    fontSize: 11.5, color: CLColors.blue, height: 1.4)),
           ),
         ],
       ),

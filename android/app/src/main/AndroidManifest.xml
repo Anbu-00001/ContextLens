@@ -15,6 +15,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Used ONLY by the in-app Safe Browser to load the sites you choose.
+         ConsentLens itself sends no telemetry / analytics / cloud calls. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
         <intent>
@@ -66,6 +69,20 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="On-device privacy monitor: explains permissions of the app being opened" />
+        </service>
+
+        <!-- Website permission watcher: reads browser permission prompts + URLs -->
+        <service
+            android:name=".WebGuardAccessibilityService"
+            android:exported="false"
+            android:label="ConsentLens Website Guard"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/webguard_accessibility_config" />
         </service>
 
         <meta-data

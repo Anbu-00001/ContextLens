@@ -60,6 +60,11 @@ class MainActivity : FlutterActivity() {
                         result.success(null)
                     }
                     "isMonitorRunning" -> result.success(MonitorService.running)
+                    "hasAccessibility" -> result.success(isAccessibilityEnabled())
+                    "openAccessibilitySettings" -> {
+                        startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        result.success(null)
+                    }
                     "verifyNow" -> {
                         startActivity(Intent(this, VerifyActivity::class.java))
                         result.success(null)
@@ -78,6 +83,15 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun isAccessibilityEnabled(): Boolean {
+        if (WebGuardAccessibilityService.connected) return true
+        val flat = Settings.Secure.getString(
+            contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        return flat.contains("$packageName/.WebGuardAccessibilityService") ||
+                flat.contains("$packageName/$packageName.WebGuardAccessibilityService")
     }
 
     private fun hasUsageAccess(): Boolean {

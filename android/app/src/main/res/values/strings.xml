@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="webguard_description">Lets ConsentLens read browser permission prompts and website addresses, so it can warn you before a website gets your camera, location, microphone, or before you open a dangerous site. All checking happens on your device.</string>
+</resources>
