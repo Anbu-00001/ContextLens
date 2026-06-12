@@ -16,6 +16,8 @@ class Keys {
   static const badges = 'earned_badges'; // CSV of badge ids
   static const trusted = 'trusted_contacts'; // JSON list {name, number}
   static const kidsPin = 'kids_pin'; // 4-digit exit PIN for Kids Mode
+  static const kidsModeOn = 'kids_mode_on'; // read by MonitorService (Kotlin)
+  static const kidsAllowedApps = 'kids_allowed_apps'; // CSV of package names
 }
 
 class HistoryEntry {
@@ -167,4 +169,19 @@ class Store {
 
   static Future<void> setKidsPin(String pin) async =>
       (await _prefs()).setString(Keys.kidsPin, pin);
+
+  // ── Kids Mode app allowlist (shared with MonitorService) ──
+  static Future<List<String>> kidsAllowedApps() async {
+    final raw = (await _prefs()).getString(Keys.kidsAllowedApps) ?? '';
+    return raw.split(',').where((s) => s.isNotEmpty).toList();
+  }
+
+  static Future<void> setKidsAllowedApps(List<String> pkgs) async =>
+      (await _prefs()).setString(Keys.kidsAllowedApps, pkgs.join(','));
+
+  static Future<void> setKidsModeOn(bool on) async =>
+      (await _prefs()).setBool(Keys.kidsModeOn, on);
+
+  static Future<bool> kidsModeOn() async =>
+      (await _prefs()).getBool(Keys.kidsModeOn) ?? false;
 }

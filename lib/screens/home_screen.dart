@@ -660,8 +660,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (pin != null) await Store.setKidsPin(pin);
     }
     if (pin != null && context.mounted) {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (_) => KidsModeScreen(lang: lang)));
+      // If Kids Mode is still on (e.g. relaunched from the block overlay),
+      // jump straight back to the child screen; otherwise parent setup first.
+      final stillOn = await Store.kidsModeOn();
+      if (!context.mounted) return;
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => stillOn
+                  ? KidsModeScreen(lang: lang)
+                  : KidsSetupScreen(lang: lang)));
     }
   }
 

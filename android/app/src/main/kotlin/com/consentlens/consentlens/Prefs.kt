@@ -14,6 +14,9 @@ object Prefs {
 
     const val KEY_USER_MODE = "user_mode"            // "adult" | "child"
     const val KEY_LAST_VERIFIED_AT = "last_verified_at" // millis
+    const val KEY_KIDS_MODE_ON = "kids_mode_on"      // Boolean, set from Dart
+    const val KEY_KIDS_ALLOWED = "kids_allowed_apps" // CSV of package names
+    const val KEY_LANGUAGE = "language"              // "en" | "hi" | "kn"
 
     fun get(context: Context): SharedPreferences =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -31,4 +34,14 @@ object Prefs {
     fun setLastVerifiedAt(context: Context, at: Long) {
         get(context).edit().putLong(PREFIX + KEY_LAST_VERIFIED_AT, at).apply()
     }
+
+    fun kidsModeOn(context: Context): Boolean =
+        get(context).getBoolean(PREFIX + KEY_KIDS_MODE_ON, false)
+
+    fun kidsAllowedApps(context: Context): Set<String> =
+        (get(context).getString(PREFIX + KEY_KIDS_ALLOWED, "") ?: "")
+            .split(',').filter { it.isNotEmpty() }.toSet()
+
+    fun language(context: Context): String =
+        get(context).getString(PREFIX + KEY_LANGUAGE, "en") ?: "en"
 }

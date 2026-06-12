@@ -1,8 +1,12 @@
 // ── ConsentLens Safe Handoff / Kids Mode (Feature 5.2) ─────────────────────
-// A simple, friendly full-screen cover for handing the phone to a child.
-// Best-effort screen pinning makes leaving harder; a 4-digit PIN (set by the
-// parent) is required to exit. Honest scoping: without device-owner this is a
-// deterrent, not an unbreakable kiosk.
+// Parent picks which apps the child may use (KidsSetupScreen). While Kids
+// Mode is on, MonitorService watches the foreground app and covers anything
+// outside the allowlist with a friendly native "ask a grown-up" overlay.
+// If no apps are picked, the legacy pinned play screen is used instead.
+// A 4-digit parent PIN gates every exit. Honest scoping: without device-owner
+// this is a strong deterrent, not an unbreakable kiosk.
+
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +16,188 @@ import '../logic/native.dart';
 import '../logic/store.dart';
 import '../theme.dart';
 
+// ════════════════════════════════════════════════════════════════════════
+// Parent setup: choose the child's apps, then start.
+// ════════════════════════════════════════════════════════════════════════
+class KidsSetupScreen extends StatefulWidget {
+  final String lang;
+  const KidsSetupScreen({super.key, required this.lang});
+
+  @override
+  State<KidsSetupScreen> createState() => _KidsSetupScreenState();
+}
+
+class _KidsSetupScreenState extends State<KidsSetupScreen> {
+  List<InstalledApp> _apps = [];
+  Map<String, Uint8List> _icons = {};
+  Set<String> _selected = {};
+  bool _loading = true;
+  bool _hasPerms = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final apps = await Native.listApps();
+    apps.sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
+    final saved = await Store.kidsAllowedApps();
+    final usage = await Native.hasUsageAccess();
+    final overlay = await Native.hasOverlayPermission();
+    final icons =
+        await Native.getAppIcons(apps.map((a) => a.packageName).toList());
+    if (!mounted) return;
+    setState(() {
+      _apps = apps;
+      _icons = icons;
+      _selected = saved.toSet();
+      _hasPerms = usage && overlay;
+      _loading = false;
+    });
+  }
+
+  Future<void> _start() async {
+    await Store.setKidsAllowedApps(_selected.toList());
+    if (_selected.isNotEmpty) {
+      // The app guard needs the monitor; make sure it is running.
+      await Native.startMonitor();
+    }
+    await Store.setKidsModeOn(_selected.isNotEmpty);
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => KidsModeScreen(lang: widget.lang)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = widget.lang;
+    return Scaffold(
+      backgroundColor: CLColors.bg,
+      appBar: AppBar(title: Text(S.kidsMode.of(lang))),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: CLColors.pink))
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(S.chooseKidsApps.of(lang),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
+                      Text(S.chooseKidsAppsSub.of(lang),
+                          style: const TextStyle(
+                              fontSize: 12,
+                              height: 1.4,
+                              color: CLColors.textSec)),
+                    ],
+                  ),
+                ),
+                if (!_hasPerms && _selected.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        color: CLColors.redLight,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Column(
+                      children: [
+                        Text(S.kidsNeedsPerms.of(lang),
+                            style: const TextStyle(
+                                fontSize: 12, color: CLColors.redDark)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () =>
+                                    Native.openUsageAccessSettings(),
+                                child: const Text('Usage',
+                                    style: TextStyle(fontSize: 12)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Native.openOverlaySettings(),
+                                child: const Text('Overlay',
+                                    style: TextStyle(fontSize: 12)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_selected.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Text(S.noAppsPicked.of(lang),
+                        style: const TextStyle(
+                            fontSize: 12, color: CLColors.textMuted)),
+                  ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _apps.length,
+                    itemBuilder: (_, i) {
+                      final app = _apps[i];
+                      final on = _selected.contains(app.packageName);
+                      final icon = _icons[app.packageName];
+                      return SwitchListTile(
+                        dense: true,
+                        secondary: icon != null
+                            ? Image.memory(icon, width: 34, height: 34)
+                            : const Icon(Icons.android_rounded,
+                                color: CLColors.textMuted),
+                        title: Text(app.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600)),
+                        value: on,
+                        onChanged: (v) => setState(() {
+                          if (v) {
+                            _selected.add(app.packageName);
+                          } else {
+                            _selected.remove(app.packageName);
+                          }
+                        }),
+                      );
+                    },
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed:
+                            (_selected.isEmpty || _hasPerms) ? _start : null,
+                        icon: const Text('🧸', style: TextStyle(fontSize: 18)),
+                        label: Text(S.startKidsMode.of(lang)),
+                        style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// Child screen: app grid (allowlist) or legacy pinned play screen.
+// ════════════════════════════════════════════════════════════════════════
 class KidsModeScreen extends StatefulWidget {
   final String lang;
   const KidsModeScreen({super.key, required this.lang});
@@ -21,10 +207,33 @@ class KidsModeScreen extends StatefulWidget {
 }
 
 class _KidsModeScreenState extends State<KidsModeScreen> {
+  List<String> _allowed = [];
+  Map<String, Uint8List> _icons = {};
+  Map<String, String> _labels = {};
+  bool _ready = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => Native.startScreenPinning());
+    _init();
+  }
+
+  Future<void> _init() async {
+    final allowed = await Store.kidsAllowedApps();
+    if (allowed.isEmpty) {
+      // Legacy toy screen → pin ConsentLens itself so the child stays here.
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => Native.startScreenPinning());
+    } else {
+      final apps = await Native.listApps();
+      _labels = {for (final a in apps) a.packageName: a.label};
+      _icons = await Native.getAppIcons(allowed);
+    }
+    if (!mounted) return;
+    setState(() {
+      _allowed = allowed;
+      _ready = true;
+    });
   }
 
   Future<bool> _tryExit() async {
@@ -36,6 +245,8 @@ class _KidsModeScreenState extends State<KidsModeScreen> {
       builder: (_) => _PinDialog(lang: widget.lang, expected: pin),
     );
     if (ok == true) {
+      await Store.setKidsModeOn(false);
+      await Native.kidsGuardOff();
       await Native.stopScreenPinning();
       return true;
     }
@@ -54,54 +265,107 @@ class _KidsModeScreenState extends State<KidsModeScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF5B3FA8),
         body: SafeArea(
-          child: Column(
-            children: [
-              // Top bar with a discreet exit (PIN-gated).
-              Align(
-                alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: const Icon(Icons.lock_rounded, color: Colors.white70),
-                  onPressed: () async {
-                    if (await _tryExit() && mounted) Navigator.pop(context);
-                  },
+          child: !_ready
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white))
+              : Column(
+                  children: [
+                    // Top bar with a discreet exit (PIN-gated).
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.lock_rounded,
+                            color: Colors.white70),
+                        onPressed: () async {
+                          if (await _tryExit() && mounted) {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                    ),
+                    const Spacer(),
+                    const Text('🧸', style: TextStyle(fontSize: 72)),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      child: Text(
+                          _allowed.isEmpty
+                              ? S.kidsHi.of(lang)
+                              : S.kidsPickApp.of(lang),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white)),
+                    ),
+                    const SizedBox(height: 26),
+                    if (_allowed.isEmpty)
+                      Wrap(
+                        spacing: 16,
+                        runSpacing: 16,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _toy('🎨'),
+                          _toy('🔢'),
+                          _toy('⭐'),
+                          _toy('🐱'),
+                          _toy('🎈'),
+                          _toy('🚗'),
+                        ],
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Wrap(
+                          spacing: 18,
+                          runSpacing: 18,
+                          alignment: WrapAlignment.center,
+                          children: _allowed.map(_appTile).toList(),
+                        ),
+                      ),
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(S.kidsModeNote.of(lang),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              height: 1.4,
+                              color: Colors.white60)),
+                    ),
+                  ],
                 ),
-              ),
-              const Spacer(),
-              const Text('🧸', style: TextStyle(fontSize: 96)),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Text(S.kidsHi.of(lang),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white)),
-              ),
-              const SizedBox(height: 30),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                alignment: WrapAlignment.center,
-                children: [
-                  _toy('🎨'),
-                  _toy('🔢'),
-                  _toy('⭐'),
-                  _toy('🐱'),
-                  _toy('🎈'),
-                  _toy('🚗'),
-                ],
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(S.kidsModeNote.of(lang),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 11, height: 1.4, color: Colors.white60)),
-              ),
-            ],
-          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _appTile(String pkg) {
+    final icon = _icons[pkg];
+    final label = _labels[pkg] ?? pkg;
+    return GestureDetector(
+      onTap: () => Native.launchApp(pkg),
+      child: SizedBox(
+        width: 86,
+        child: Column(
+          children: [
+            Container(
+              width: 78,
+              height: 78,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(20)),
+              child: icon != null
+                  ? Image.memory(icon)
+                  : const Icon(Icons.apps_rounded, color: Color(0xFF5B3FA8)),
+            ),
+            const SizedBox(height: 6),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 11, color: Colors.white)),
+          ],
         ),
       ),
     );

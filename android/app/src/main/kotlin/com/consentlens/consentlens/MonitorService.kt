@@ -49,7 +49,9 @@ class MonitorService : Service() {
 
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_USER_PRESENT) {
+            if (intent.action == Intent.ACTION_USER_PRESENT &&
+                !Prefs.kidsModeOn(context)
+            ) {
                 triggerVerify()
             }
         }
@@ -89,6 +91,7 @@ class MonitorService : Service() {
         } catch (_: Exception) {
         }
         OverlayController.hide(this)
+        KidsBlockOverlay.hide(this)
         super.onDestroy()
     }
 
@@ -138,6 +141,14 @@ class MonitorService : Service() {
         if (pkg == lastPackage) return
         lastPackage = pkg
 
+        // ── Kids Mode guard: parent-approved apps only ──────────────────────
+        if (Prefs.kidsModeOn(this)) {
+            OverlayController.hide(this) // no permission popups for a child
+            handleKidsForeground(pkg)
+            return
+        }
+        KidsBlockOverlay.hide(this)
+
         if (pkg == packageName || pkg in launcherPackages || pkg == "com.android.systemui") {
             OverlayController.hide(this)
             return
@@ -148,6 +159,41 @@ class MonitorService : Service() {
         val payload = buildPayload(pkg) ?: return
         lastShownAt[pkg] = now
         OverlayController.show(this, payload)
+    }
+
+    /**
+     * While Kids Mode is on: any app outside the parent's allowlist gets the
+     * friendly full-screen block. Never block our own app, the launcher,
+     * system UI, the keyboard, or the phone/dialer app (emergency calls).
+     */
+    private fun handleKidsForeground(pkg: String) {
+        val exempt = pkg == packageName ||
+                pkg in launcherPackages ||
+                pkg == "com.android.systemui" ||
+                pkg == defaultImePackage() ||
+                pkg == defaultDialerPackage()
+        if (exempt || pkg in Prefs.kidsAllowedApps(this)) {
+            KidsBlockOverlay.hide(this)
+        } else {
+            KidsBlockOverlay.show(this)
+        }
+    }
+
+    private fun defaultImePackage(): String = try {
+        android.provider.Settings.Secure.getString(
+            contentResolver,
+            android.provider.Settings.Secure.DEFAULT_INPUT_METHOD
+        )?.split("/")?.firstOrNull() ?: ""
+    } catch (_: Exception) {
+        ""
+    }
+
+    private fun defaultDialerPackage(): String = try {
+        val tm = getSystemService(Context.TELECOM_SERVICE)
+                as android.telecom.TelecomManager
+        tm.defaultDialerPackage ?: ""
+    } catch (_: Exception) {
+        ""
     }
 
     private fun buildPayload(pkg: String): String? {
@@ -217,6 +263,7 @@ class MonitorService : Service() {
 
     // ── Adult/child verification triggers ───────────────────────────────────
     private fun checkHourlyVerify() {
+        if (Prefs.kidsModeOn(this)) return // don't interrupt a child with biometrics
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (!pm.isInteractive) return
         val last = Prefs.lastVerifiedAt(this)

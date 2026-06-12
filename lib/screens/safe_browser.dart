@@ -29,10 +29,16 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
   String _currentHost = '';
   bool _loading = false;
   bool _blocked = false;
+  // Allowlist gate: unknown (not commonly used) sites get a warning first.
+  bool _warning = false;
+  String _pendingUrl = '';
+  bool _childMode = false;
+  final Set<String> _allowedHosts = {}; // "continue once" for this session
 
   @override
   void initState() {
     super.initState();
+    Store.userMode().then((m) => _childMode = m == 'child');
     _controller = WebViewController(onPermissionRequest: _onPermissionRequest)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -47,17 +53,33 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
           },
           onPageFinished: (_) => setState(() => _loading = false),
           onNavigationRequest: (req) {
-            final verdict = assessDomain(req.url);
-            if (verdict.shady) {
-              setState(() => _blocked = true);
-              _warnThreat(hostOf(req.url), verdict);
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
+            if (!req.isMainFrame) return NavigationDecision.navigate;
+            return _gate(req.url)
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
           },
         ),
       )
       ..loadRequest(Uri.parse('https://www.google.com'));
+  }
+
+  /// Allowlist gate for main-frame navigations. True = let it load.
+  bool _gate(String url) {
+    switch (siteTrust(url)) {
+      case SiteTrust.shady:
+        setState(() => _blocked = true);
+        _warnThreat(hostOf(url), assessDomain(url));
+        return false;
+      case SiteTrust.trusted:
+        return true;
+      case SiteTrust.unknown:
+        if (_allowedHosts.contains(hostOf(url))) return true;
+        setState(() {
+          _warning = true;
+          _pendingUrl = url;
+        });
+        return false;
+    }
   }
 
   @override
@@ -89,17 +111,11 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
   void _go() {
     var input = _urlCtrl.text.trim();
     if (input.isEmpty) return;
-    final verdict = assessDomain(input);
-    if (verdict.shady) {
-      setState(() => _blocked = true);
-      _warnThreat(hostOf(input), verdict);
-      return;
-    }
     final looksLikeDomain = input.contains('.') && !input.contains(' ');
     final url = looksLikeDomain
         ? (input.startsWith('http') ? input : 'https://$input')
         : 'https://www.google.com/search?q=${Uri.encodeComponent(input)}';
-    _controller.loadRequest(Uri.parse(url));
+    if (_gate(url)) _controller.loadRequest(Uri.parse(url));
   }
 
   void _warnThreat(String host, ThreatVerdict verdict) async {
@@ -274,7 +290,14 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.lock_rounded, size: 14, color: CLColors.green),
+              Icon(
+                  isTrustedSite(_currentHost)
+                      ? Icons.verified_rounded
+                      : Icons.lock_rounded,
+                  size: 14,
+                  color: isTrustedSite(_currentHost)
+                      ? CLColors.green
+                      : Colors.amber),
               const SizedBox(width: 6),
               Expanded(
                 child: TextField(
@@ -310,7 +333,76 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
+          if (_warning) _unknownSiteOverlay(lang),
           if (_blocked) _blockedOverlay(lang),
+        ],
+      ),
+    );
+  }
+
+  // Warning page for sites that are not on the commonly-used trusted list.
+  // Adults may continue once; in child mode the site stays closed.
+  Widget _unknownSiteOverlay(String lang) {
+    final host = hostOf(_pendingUrl);
+    return Container(
+      color: CLColors.bg,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('⚠️', style: TextStyle(fontSize: 56)),
+          const SizedBox(height: 12),
+          Text(S.unknownSiteTitle.of(lang),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: CLColors.redDark)),
+          const SizedBox(height: 6),
+          Text(host,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: CLColors.textSec)),
+          const SizedBox(height: 8),
+          Text(
+              _childMode
+                  ? S.unknownSiteChild.of(lang)
+                  : S.unknownSiteBody.of(lang),
+              textAlign: TextAlign.center,
+              style: CLTextStyles.body),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => setState(() {
+                _warning = false;
+                _pendingUrl = '';
+              }),
+              child: Text(S.goBack.of(lang)),
+            ),
+          ),
+          if (!_childMode) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  final url = _pendingUrl;
+                  _allowedHosts.add(hostOf(url));
+                  setState(() {
+                    _warning = false;
+                    _pendingUrl = '';
+                  });
+                  _controller.loadRequest(Uri.parse(url));
+                },
+                child: Text(S.proceedAnyway.of(lang)),
+              ),
+            ),
+          ],
         ],
       ),
     );

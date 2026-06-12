@@ -181,6 +181,36 @@ class S {
   static const goBack = L('Go back', 'वापस जाएँ', 'ಹಿಂದೆ ಹೋಗಿ');
   static const proceedAnyway =
       L('Proceed anyway', 'फिर भी आगे बढ़ें', 'ಹೇಗಾದರೂ ಮುಂದುವರಿಯಿರಿ');
+  static const trustedSite =
+      L('Trusted site', 'विश्वसनीय साइट', 'ನಂಬಲರ್ಹ ಸೈಟ್');
+  static const unknownSiteTitle = L('Not a commonly used site',
+      'यह आम इस्तेमाल वाली साइट नहीं है', 'ಇದು ಸಾಮಾನ್ಯ ಬಳಕೆಯ ಸೈಟ್ ಅಲ್ಲ');
+  static const unknownSiteBody = L(
+      'This website is not on the trusted list. It could be fraudulent. If someone sent you this link, do not enter money details or passwords.',
+      'यह वेबसाइट विश्वसनीय सूची में नहीं है। यह धोखाधड़ी हो सकती है। अगर किसी ने यह लिंक भेजा है, तो पैसे की जानकारी या पासवर्ड न डालें।',
+      'ಈ ವೆಬ್‌ಸೈಟ್ ನಂಬಲರ್ಹ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲ. ಇದು ವಂಚನೆಯಾಗಿರಬಹುದು. ಯಾರಾದರೂ ಈ ಲಿಂಕ್ ಕಳುಹಿಸಿದ್ದರೆ, ಹಣದ ವಿವರ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಹಾಕಬೇಡಿ.');
+  static const unknownSiteChild = L(
+      'This site is not on the trusted list, so it stays closed in child mode.',
+      'यह साइट विश्वसनीय सूची में नहीं है, इसलिए चाइल्ड मोड में बंद रहेगी।',
+      'ಈ ಸೈಟ್ ನಂಬಲರ್ಹ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲ, ಹಾಗಾಗಿ ಮಕ್ಕಳ ಮೋಡ್‌ನಲ್ಲಿ ಮುಚ್ಚಿರುತ್ತದೆ.');
+
+  // Kids Mode app allowlist
+  static const chooseKidsApps = L('Choose apps for your child',
+      'बच्चे के लिए ऐप चुनें', 'ಮಗುವಿಗೆ ಆ್ಯಪ್ ಆಯ್ಕೆಮಾಡಿ');
+  static const chooseKidsAppsSub = L(
+      'Only the apps you pick here will open while the child uses the phone. Everything else shows a friendly "ask a grown-up" screen.',
+      'सिर्फ़ यहाँ चुने ऐप ही बच्चे के फोन इस्तेमाल के दौरान खुलेंगे। बाकी सब पर "बड़ों से पूछो" स्क्रीन दिखेगी।',
+      'ಇಲ್ಲಿ ಆಯ್ಕೆ ಮಾಡಿದ ಆ್ಯಪ್‌ಗಳು ಮಾತ್ರ ಮಗು ಫೋನ್ ಬಳಸುವಾಗ ತೆರೆಯುತ್ತವೆ. ಉಳಿದವುಗಳಿಗೆ "ದೊಡ್ಡವರನ್ನು ಕೇಳಿ" ಪರದೆ ಕಾಣುತ್ತದೆ.');
+  static const kidsNeedsPerms = L(
+      'To guard other apps, ConsentLens needs Usage access and Display-over-apps permission.',
+      'दूसरे ऐप्स की निगरानी के लिए ConsentLens को उपयोग एक्सेस और ऐप्स-के-ऊपर-दिखाएँ अनुमति चाहिए।',
+      'ಇತರ ಆ್ಯಪ್‌ಗಳನ್ನು ಕಾಯಲು ConsentLens ಗೆ ಬಳಕೆ ಪ್ರವೇಶ ಮತ್ತು ಆ್ಯಪ್‌ಗಳ-ಮೇಲೆ-ತೋರಿಸು ಅನುಮತಿ ಬೇಕು.');
+  static const noAppsPicked = L(
+      'No apps picked — the child gets a simple play screen only.',
+      'कोई ऐप नहीं चुना — बच्चे को सिर्फ़ साधारण खेल स्क्रीन मिलेगी।',
+      'ಯಾವ ಆ್ಯಪ್ ಆಯ್ಕೆ ಆಗಿಲ್ಲ — ಮಗುವಿಗೆ ಸರಳ ಆಟದ ಪರದೆ ಮಾತ್ರ.');
+  static const kidsPickApp = L('Tap an app to play',
+      'खेलने के लिए ऐप दबाओ', 'ಆಡಲು ಆ್ಯಪ್ ಒತ್ತಿ');
 
   // Stalkerware / safety module
   static const safetyScan = L('Spyware safety scan', 'स्पाईवेयर सुरक्षा स्कैन',

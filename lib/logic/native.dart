@@ -1,5 +1,7 @@
 // ── Bridge to the Kotlin side (MainActivity / MonitorService) ──────────────
 
+import 'dart:typed_data';
+
 import 'package:flutter/services.dart';
 
 class InstalledApp {
@@ -88,6 +90,21 @@ class Native {
       );
     }).toList();
   }
+
+  /// Launch another app by package name (Kids Mode allowlist grid).
+  static Future<bool> launchApp(String pkg) async =>
+      (await _ch.invokeMethod<bool>('launchApp', {'pkg': pkg})) ?? false;
+
+  /// PNG icon bytes for the given packages (pkg → bytes).
+  static Future<Map<String, Uint8List>> getAppIcons(List<String> pkgs) async {
+    final raw = await _ch
+        .invokeMethod<Map<dynamic, dynamic>>('getAppIcons', {'pkgs': pkgs});
+    if (raw == null) return {};
+    return raw.map((k, v) => MapEntry('$k', v as Uint8List));
+  }
+
+  /// Tear down the kids block overlay immediately (on exit).
+  static Future<void> kidsGuardOff() => _ch.invokeMethod('kidsGuardOff');
 
   static Future<List<InstalledApp>> listApps() async {
     final raw = await _ch.invokeMethod<List<dynamic>>('listApps') ?? [];

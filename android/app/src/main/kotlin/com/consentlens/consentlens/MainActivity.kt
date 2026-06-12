@@ -96,6 +96,27 @@ class MainActivity : FlutterActivity() {
                     }
                     "listApps" -> result.success(listApps())
                     "scanInstalledApps" -> result.success(scanInstalledApps())
+                    "launchApp" -> {
+                        val pkg = call.argument<String>("pkg")
+                        val intent =
+                            if (pkg != null) packageManager.getLaunchIntentForPackage(pkg)
+                            else null
+                        if (intent != null) {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
+                            result.success(true)
+                        } else {
+                            result.success(false)
+                        }
+                    }
+                    "getAppIcons" -> {
+                        val pkgs = call.argument<List<String>>("pkgs") ?: emptyList()
+                        result.success(getAppIcons(pkgs))
+                    }
+                    "kidsGuardOff" -> {
+                        KidsBlockOverlay.hide(this)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -176,6 +197,30 @@ class MainActivity : FlutterActivity() {
                     "accessibility" to a11yPkgs.contains(pkg)
                 )
             )
+        }
+        return out
+    }
+
+    /** Small PNG icons for the Kids Mode app grid (pkg → bytes). */
+    private fun getAppIcons(pkgs: List<String>): Map<String, ByteArray> {
+        val pm = packageManager
+        val out = HashMap<String, ByteArray>()
+        for (pkg in pkgs) {
+            try {
+                val drawable = pm.getApplicationIcon(pkg)
+                val size = 128
+                val bmp = android.graphics.Bitmap.createBitmap(
+                    size, size, android.graphics.Bitmap.Config.ARGB_8888
+                )
+                val canvas = android.graphics.Canvas(bmp)
+                drawable.setBounds(0, 0, size, size)
+                drawable.draw(canvas)
+                val baos = java.io.ByteArrayOutputStream()
+                bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, baos)
+                bmp.recycle()
+                out[pkg] = baos.toByteArray()
+            } catch (_: Exception) {
+            }
         }
         return out
     }

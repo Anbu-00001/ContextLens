@@ -40,6 +40,70 @@ const List<String> _luringWords = [
   'kyc', 'otp', 'wallet', 'free', 'prize', 'gift', 'reward', 'bonus', 'claim',
 ];
 
+// ── Trusted-sites allowlist ─────────────────────────────────────────────────
+// "Commonly used" sites for first-time internet users (India-focused, from
+// SimilarWeb/Semrush top-India rankings + official bank/gov/UPI domains).
+// Matching is exact-label suffix only (host == d or host ends with ".d"), so
+// "google.com.evil.in" or "fakeflipkart.com" can NOT ride on the list.
+const Set<String> trustedSites = {
+  // Search / big tech
+  'google.com', 'google.co.in', 'gmail.com', 'youtube.com', 'bing.com',
+  'microsoft.com', 'apple.com', 'mozilla.org', 'wikipedia.org',
+  'chatgpt.com', 'openai.com', 'samsung.com', 'duckduckgo.com',
+  // Social / messaging
+  'whatsapp.com', 'instagram.com', 'facebook.com', 'x.com', 'twitter.com',
+  'linkedin.com', 'telegram.org', 'pinterest.com', 'reddit.com',
+  'snapchat.com', 'sharechat.com', 'threads.net', 'quora.com',
+  // Shopping / groceries
+  'amazon.in', 'amazon.com', 'flipkart.com', 'myntra.com', 'meesho.com',
+  'ajio.com', 'snapdeal.com', 'jiomart.com', 'bigbasket.com', 'blinkit.com',
+  'zeptonow.com', 'nykaa.com', 'tatacliq.com',
+  // Food / travel / transport
+  'zomato.com', 'swiggy.com', 'makemytrip.com', 'redbus.in', 'goibibo.com',
+  'irctc.co.in', 'ixigo.com', 'olacabs.com', 'uber.com', 'rapido.bike',
+  'confirmtkt.com', 'abhibus.com',
+  // Banks (official domains only)
+  'onlinesbi.sbi', 'sbi.co.in', 'hdfcbank.com', 'icicibank.com',
+  'axisbank.com', 'kotak.com', 'pnbindia.in', 'bankofbaroda.in',
+  'canarabank.com', 'unionbankofindia.co.in', 'idfcfirstbank.com',
+  'indusind.com', 'yesbank.in', 'rbi.org.in',
+  // Payments / UPI
+  'paytm.com', 'phonepe.com', 'bhimupi.org.in', 'npci.org.in',
+  'mobikwik.com', 'freecharge.in',
+  // Government (controlled TLD spaces — suffix match covers all departments)
+  'gov.in', 'nic.in', 'mygov.in', 'ac.in', 'edu.in',
+  // Entertainment / news
+  'hotstar.com', 'netflix.com', 'primevideo.com', 'jiocinema.com',
+  'spotify.com', 'gaana.com', 'sonyliv.com', 'zee5.com', 'mxplayer.in',
+  'cricbuzz.com', 'espncricinfo.com', 'ndtv.com', 'indiatimes.com',
+  'hindustantimes.com', 'thehindu.com', 'aajtak.in', 'abplive.com',
+  'news18.com', 'bhaskar.com', 'jagran.com', 'indianexpress.com',
+  // Education / jobs / utility
+  'byjus.com', 'vedantu.com', 'unacademy.com', 'khanacademy.org',
+  'coursera.org', 'udemy.com', 'naukri.com', 'indeed.com', 'justdial.com',
+  'indiamart.com', 'truecaller.com',
+};
+
+/// Allowlist verdict for the Safe Browser.
+enum SiteTrust { trusted, unknown, shady }
+
+bool isTrustedSite(String input) {
+  var host = hostOf(input);
+  if (host.startsWith('www.')) host = host.substring(4);
+  if (host.isEmpty) return false;
+  for (final t in trustedSites) {
+    if (host == t || host.endsWith('.$t')) return true;
+  }
+  return false;
+}
+
+/// Combined verdict: shady heuristics win, then the allowlist, else unknown.
+SiteTrust siteTrust(String input) {
+  if (assessDomain(input).shady) return SiteTrust.shady;
+  if (isTrustedSite(input)) return SiteTrust.trusted;
+  return SiteTrust.unknown;
+}
+
 String hostOf(String input) {
   var s = input.trim().toLowerCase();
   s = s.replaceFirst(RegExp(r'^[a-z]+://'), '');
