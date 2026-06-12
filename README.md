@@ -94,8 +94,8 @@ flowchart TB
     end
 
     Device -. "❌ no cloud · no accounts · no tracking" .-> Cloud["☁️"]
-    style Cloud fill:#fee,stroke:#f88,stroke-dasharray:5 5
-    style Device fill:#fff0f6,stroke:#E91E63,stroke-width:2px
+    style Cloud fill:#ffe3e3,stroke:#e74c3c,stroke-width:2px,color:#a11111
+    style Device fill:#fff0f6,stroke:#E91E63,stroke-width:2px,color:#880E4F
 ```
 
 ---
@@ -120,9 +120,9 @@ flowchart LR
     G -->|nothing| R3["✅ SAFE"]
     R1 & R2 & R3 --> V["🔊 Spoken verdict<br/>+ 'rule to remember'<br/>+ share card"]
 
-    style R1 fill:#ffebee,stroke:#c62828
-    style R2 fill:#fff8e1,stroke:#f9a825
-    style R3 fill:#e8f5e9,stroke:#2e7d32
+    style R1 fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    style R2 fill:#ffe7a3,stroke:#f9a825,stroke-width:2px,color:#7a5b00
+    style R3 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 ```
 
 ---
@@ -141,10 +141,10 @@ flowchart TD
     M -->|adult| P["Proceed once · or go back"]
     M -->|child| K["🔒 Stays closed"]
 
-    style T fill:#e8f5e9,stroke:#2e7d32
-    style B fill:#ffebee,stroke:#c62828
-    style W fill:#fff8e1,stroke:#f9a825
-    style K fill:#ede7f6,stroke:#5e35b1
+    style T fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style B fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    style W fill:#ffe7a3,stroke:#f9a825,stroke-width:2px,color:#7a5b00
+    style K fill:#d9ccf2,stroke:#5e35b1,stroke-width:2px,color:#4527a0
 ```
 
 > Ride-along tricks like `google.com.evil.in` or `fakeflipkart.com` are rejected — matching is exact-label suffix only, covered by unit tests.
@@ -200,8 +200,8 @@ flowchart LR
         B3["Ask for SMS / Contacts / Location"]
         B4["Track or profile the user"]
     end
-    style YES fill:#e8f5e9,stroke:#2e7d32
-    style NO fill:#ffebee,stroke:#c62828
+    style YES fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style NO fill:#ffcdd2,stroke:#c62828,stroke-width:2px,color:#b71c1c
 ```
 
 **Permissions used (and why):** overlay (permission popups & kids guard) · usage-access (which app is open) · notifications (foreground service) · biometric (adult/child verify). **No** SMS, Contacts, Camera, or Location permission.
