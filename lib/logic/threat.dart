@@ -81,7 +81,30 @@ const Set<String> trustedSites = {
   // Education / jobs / utility
   'byjus.com', 'vedantu.com', 'unacademy.com', 'khanacademy.org',
   'coursera.org', 'udemy.com', 'naukri.com', 'indeed.com', 'justdial.com',
-  'indiamart.com', 'truecaller.com',
+  'indiamart.com', 'truecaller.com', 'edx.org', 'swayam.gov.in',
+  'nptel.ac.in', 'duolingo.com', 'foundtio.in',
+  // Coding / learning / developer (commonly used by students & professionals)
+  'leetcode.com', 'github.com', 'gitlab.com', 'bitbucket.org',
+  'stackoverflow.com', 'stackexchange.com', 'geeksforgeeks.org',
+  'hackerrank.com', 'hackerearth.com', 'codechef.com', 'codeforces.com',
+  'w3schools.com', 'programiz.com', 'tutorialspoint.com', 'freecodecamp.org',
+  'codepen.io', 'replit.com', 'kaggle.com', 'codingninjas.com',
+  'developer.mozilla.org', 'dev.to', 'medium.com', 'npmjs.com',
+  'pypi.org', 'jupyter.org', 'anaconda.com', 'docker.com', 'vercel.com',
+  'netlify.app', 'firebase.google.com', 'cloud.google.com',
+  // Google & Microsoft services (most are covered by google.com / live.com)
+  'google.co', 'goo.gl', 'gstatic.com', 'googleusercontent.com',
+  'office.com', 'office365.com', 'outlook.com', 'live.com', 'microsoftonline.com',
+  'sharepoint.com', 'onedrive.com', 'azure.com',
+  // Work / productivity / cloud
+  'notion.so', 'figma.com', 'canva.com', 'dropbox.com', 'slack.com',
+  'zoom.us', 'trello.com', 'atlassian.net', 'asana.com', 'miro.com',
+  'overleaf.com', 'grammarly.com', 'wetransfer.com', 'adobe.com',
+  // Reference / AI / knowledge
+  'gemini.google.com', 'bard.google.com', 'claude.ai', 'anthropic.com',
+  'perplexity.ai', 'wolframalpha.com', 'archive.org', 'scholar.google.com',
+  'researchgate.net', 'arxiv.org', 'imdb.com', 'goodreads.com',
+  'britannica.com', 'twitch.tv', 'soundcloud.com',
 };
 
 /// Allowlist verdict for the Safe Browser.
@@ -96,6 +119,12 @@ bool isTrustedSite(String input) {
   }
   return false;
 }
+
+/// True when the address is plain HTTP (no TLS) — insecure, can be tampered
+/// with in transit and is common in phishing. Sites typed without a scheme are
+/// upgraded to https before navigation, so only explicit http:// reaches here.
+bool isInsecureHttp(String input) =>
+    input.trim().toLowerCase().startsWith('http://');
 
 /// Combined verdict: shady heuristics win, then the allowlist, else unknown.
 SiteTrust siteTrust(String input) {

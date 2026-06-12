@@ -193,9 +193,36 @@ void main() {
       expect(isTrustedSite('notgov.in.example.com'), isFalse);
     });
 
+    test('commonly-used coding / learning / work sites are trusted', () {
+      for (final s in [
+        'https://leetcode.com/problems/two-sum',
+        'github.com',
+        'https://stackoverflow.com/questions/123',
+        'geeksforgeeks.org',
+        'hackerrank.com',
+        'https://www.w3schools.com/python',
+        'https://lens.google.com',
+        'https://scholar.google.com',
+        'https://meet.google.com/abc',
+        'notion.so',
+        'figma.com',
+        'https://outlook.office.com',
+      ]) {
+        expect(siteTrust(s), SiteTrust.trusted, reason: s);
+      }
+    });
+
     test('random unknown sites are flagged unknown', () {
       expect(siteTrust('some-random-shop.com'), SiteTrust.unknown);
       expect(siteTrust('https://my-new-blog.net'), SiteTrust.unknown);
+    });
+
+    test('plain HTTP is detected as insecure', () {
+      expect(isInsecureHttp('http://example.com'), isTrue);
+      expect(isInsecureHttp('http://leetcode.com'), isTrue);
+      expect(isInsecureHttp('https://leetcode.com'), isFalse);
+      expect(isInsecureHttp('leetcode.com'), isFalse);
+      expect(isInsecureHttp('HTTPS://Secure.com'), isFalse);
     });
 
     test('shady heuristics still win over unknown', () {

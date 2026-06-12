@@ -31,6 +31,7 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
   bool _blocked = false;
   // Allowlist gate: unknown (not commonly used) sites get a warning first.
   bool _warning = false;
+  bool _insecure = false; // the pending warning is about plain HTTP
   String _pendingUrl = '';
   bool _childMode = false;
   final Set<String> _allowedHosts = {}; // "continue once" for this session
@@ -65,19 +66,32 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
 
   /// Allowlist gate for main-frame navigations. True = let it load.
   bool _gate(String url) {
+    final host = hostOf(url);
+    // Plain HTTP (no TLS) is flagged before anything else — even if the host
+    // would otherwise be trusted, an insecure connection is a real risk.
+    if (isInsecureHttp(url) && !_allowedHosts.contains(host)) {
+      setState(() {
+        _warning = true;
+        _insecure = true;
+        _pendingUrl = url;
+        _currentHost = host;
+      });
+      return false;
+    }
     switch (siteTrust(url)) {
       case SiteTrust.shady:
         setState(() => _blocked = true);
-        _warnThreat(hostOf(url), assessDomain(url));
+        _warnThreat(host, assessDomain(url));
         return false;
       case SiteTrust.trusted:
         return true;
       case SiteTrust.unknown:
-        if (_allowedHosts.contains(hostOf(url))) return true;
+        if (_allowedHosts.contains(host)) return true;
         setState(() {
           _warning = true;
+          _insecure = false;
           _pendingUrl = url;
-          _currentHost = hostOf(url); // badge reflects the warned site
+          _currentHost = host; // badge reflects the warned site
         });
         return false;
     }
@@ -352,9 +366,10 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('⚠️', style: TextStyle(fontSize: 56)),
+          Text(_insecure ? '🔓' : '⚠️', style: const TextStyle(fontSize: 56)),
           const SizedBox(height: 12),
-          Text(S.unknownSiteTitle.of(lang),
+          Text(
+              (_insecure ? S.insecureSiteTitle : S.unknownSiteTitle).of(lang),
               textAlign: TextAlign.center,
               style: const TextStyle(
                   fontSize: 18,
@@ -370,9 +385,11 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
                   color: CLColors.textSec)),
           const SizedBox(height: 8),
           Text(
-              _childMode
-                  ? S.unknownSiteChild.of(lang)
-                  : S.unknownSiteBody.of(lang),
+              _insecure
+                  ? S.insecureSiteBody.of(lang)
+                  : _childMode
+                      ? S.unknownSiteChild.of(lang)
+                      : S.unknownSiteBody.of(lang),
               textAlign: TextAlign.center,
               style: CLTextStyles.body),
           const SizedBox(height: 20),
@@ -381,6 +398,7 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
             child: ElevatedButton(
               onPressed: () => setState(() {
                 _warning = false;
+                _insecure = false;
                 _pendingUrl = '';
               }),
               child: Text(S.goBack.of(lang)),
@@ -396,6 +414,7 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
                   _allowedHosts.add(hostOf(url));
                   setState(() {
                     _warning = false;
+                    _insecure = false;
                     _pendingUrl = '';
                   });
                   _controller.loadRequest(Uri.parse(url));

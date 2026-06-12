@@ -193,6 +193,12 @@ class S {
       'This site is not on the trusted list, so it stays closed in child mode.',
       'यह साइट विश्वसनीय सूची में नहीं है, इसलिए चाइल्ड मोड में बंद रहेगी।',
       'ಈ ಸೈಟ್ ನಂಬಲರ್ಹ ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲ, ಹಾಗಾಗಿ ಮಕ್ಕಳ ಮೋಡ್‌ನಲ್ಲಿ ಮುಚ್ಚಿರುತ್ತದೆ.');
+  static const insecureSiteTitle = L('Not a secure site (HTTP)',
+      'सुरक्षित साइट नहीं (HTTP)', 'ಸುರಕ್ಷಿತ ಸೈಟ್ ಅಲ್ಲ (HTTP)');
+  static const insecureSiteBody = L(
+      'This site does not use a secure (https) connection. Anything you type — passwords, OTPs, card numbers — can be seen by others. Do not enter private details.',
+      'यह साइट सुरक्षित (https) कनेक्शन का उपयोग नहीं करती। आप जो भी टाइप करें — पासवर्ड, OTP, कार्ड नंबर — दूसरे देख सकते हैं। निजी जानकारी न डालें।',
+      'ಈ ಸೈಟ್ ಸುರಕ್ಷಿತ (https) ಸಂಪರ್ಕ ಬಳಸುವುದಿಲ್ಲ. ನೀವು ಟೈಪ್ ಮಾಡುವ ಪಾಸ್‌ವರ್ಡ್, OTP, ಕಾರ್ಡ್ ಸಂಖ್ಯೆ ಬೇರೆಯವರು ನೋಡಬಹುದು. ಖಾಸಗಿ ವಿವರ ಹಾಕಬೇಡಿ.');
 
   // Kids Mode app allowlist
   static const chooseKidsApps = L('Choose apps for your child',
