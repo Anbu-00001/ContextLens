@@ -117,6 +117,20 @@ class MainActivity : FlutterActivity() {
                         KidsBlockOverlay.hide(this)
                         result.success(null)
                     }
+                    "setKidsMode" -> {
+                        // Written natively so MonitorService is guaranteed to
+                        // see it regardless of the shared_preferences backend.
+                        val on = call.argument<Boolean>("on") ?: false
+                        val allowed = call.argument<String>("allowed") ?: ""
+                        val lang = call.argument<String>("lang") ?: "en"
+                        Prefs.get(this).edit()
+                            .putBoolean("flutter.${Prefs.KEY_KIDS_MODE_ON}", on)
+                            .putString("flutter.${Prefs.KEY_KIDS_ALLOWED}", allowed)
+                            .putString("flutter.${Prefs.KEY_LANGUAGE}", lang)
+                            .apply()
+                        if (!on) KidsBlockOverlay.hide(this)
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }

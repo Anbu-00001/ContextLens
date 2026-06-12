@@ -31,6 +31,7 @@ class _KidsSetupScreenState extends State<KidsSetupScreen> {
   List<InstalledApp> _apps = [];
   Map<String, Uint8List> _icons = {};
   Set<String> _selected = {};
+  final _pinCtrl = TextEditingController();
   bool _loading = true;
   bool _hasPerms = true;
 
@@ -40,10 +41,17 @@ class _KidsSetupScreenState extends State<KidsSetupScreen> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _pinCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     final apps = await Native.listApps();
     apps.sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
     final saved = await Store.kidsAllowedApps();
+    final pin = await Store.kidsPin();
     final usage = await Native.hasUsageAccess();
     final overlay = await Native.hasOverlayPermission();
     final icons =
@@ -53,18 +61,24 @@ class _KidsSetupScreenState extends State<KidsSetupScreen> {
       _apps = apps;
       _icons = icons;
       _selected = saved.toSet();
+      if (pin != null) _pinCtrl.text = pin;
       _hasPerms = usage && overlay;
       _loading = false;
     });
   }
 
+  bool get _pinOk => _pinCtrl.text.length == 4;
+
   Future<void> _start() async {
+    await Store.setKidsPin(_pinCtrl.text);
     await Store.setKidsAllowedApps(_selected.toList());
     if (_selected.isNotEmpty) {
       // The app guard needs the monitor; make sure it is running.
       await Native.startMonitor();
     }
     await Store.setKidsModeOn(_selected.isNotEmpty);
+    await Native.setKidsMode(
+        _selected.isNotEmpty, _selected.toList(), widget.lang);
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
@@ -142,6 +156,34 @@ class _KidsSetupScreenState extends State<KidsSetupScreen> {
                         style: const TextStyle(
                             fontSize: 12, color: CLColors.textMuted)),
                   ),
+                // Parent exit PIN — required, can be changed here.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock_outline_rounded,
+                          size: 18, color: CLColors.pink),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _pinCtrl,
+                          keyboardType: TextInputType.number,
+                          obscureText: true,
+                          maxLength: 4,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly
+                          ],
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            counterText: '',
+                            isDense: true,
+                            labelText: S.setPin.of(lang),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Expanded(
                   child: ListView.builder(
@@ -179,10 +221,12 @@ class _KidsSetupScreenState extends State<KidsSetupScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed:
-                            (_selected.isEmpty || _hasPerms) ? _start : null,
+                        onPressed: (_pinOk && (_selected.isEmpty || _hasPerms))
+                            ? _start
+                            : null,
                         icon: const Text('🧸', style: TextStyle(fontSize: 18)),
-                        label: Text(S.startKidsMode.of(lang)),
+                        label: Text(
+                            _pinOk ? S.startKidsMode.of(lang) : S.setPin.of(lang)),
                         style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14)),
                       ),
@@ -225,6 +269,10 @@ class _KidsModeScreenState extends State<KidsModeScreen> {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => Native.startScreenPinning());
     } else {
+      // Re-assert the guard: after a process kill the monitor may be dead even
+      // though kids_mode_on persisted. Make sure it is running and flagged.
+      await Native.startMonitor();
+      await Native.setKidsMode(true, allowed, widget.lang);
       final apps = await Native.listApps();
       _labels = {for (final a in apps) a.packageName: a.label};
       _icons = await Native.getAppIcons(allowed);
@@ -246,6 +294,7 @@ class _KidsModeScreenState extends State<KidsModeScreen> {
     );
     if (ok == true) {
       await Store.setKidsModeOn(false);
+      await Native.setKidsMode(false, const [], widget.lang);
       await Native.kidsGuardOff();
       await Native.stopScreenPinning();
       return true;

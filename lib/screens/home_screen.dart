@@ -628,49 +628,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _launchKidsMode(BuildContext context, String lang) async {
-    var pin = await Store.kidsPin();
-    if (pin == null && context.mounted) {
-      final set = TextEditingController();
-      pin = await showDialog<String>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(S.setPin.of(lang)),
-          content: TextField(
-            controller: set,
-            keyboardType: TextInputType.number,
-            obscureText: true,
-            maxLength: 4,
-            autofocus: true,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(counterText: ''),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () {
-                if (set.text.length == 4) Navigator.pop(context, set.text);
-              },
-              child: Text(S.saveContact.of(lang)),
-            ),
-          ],
-        ),
-      );
-      if (pin != null) await Store.setKidsPin(pin);
-    }
-    if (pin != null && context.mounted) {
-      // If Kids Mode is still on (e.g. relaunched from the block overlay),
-      // jump straight back to the child screen; otherwise parent setup first.
-      final stillOn = await Store.kidsModeOn();
-      if (!context.mounted) return;
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => stillOn
-                  ? KidsModeScreen(lang: lang)
-                  : KidsSetupScreen(lang: lang)));
-    }
+    // The parent setup screen takes the exit PIN and the app allowlist. If
+    // Kids Mode is already on (e.g. relaunched from the block overlay), jump
+    // straight back to the child screen.
+    final stillOn = await Store.kidsModeOn();
+    if (!context.mounted) return;
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => stillOn
+                ? KidsModeScreen(lang: lang)
+                : KidsSetupScreen(lang: lang)));
   }
 
   Widget _setupRow({

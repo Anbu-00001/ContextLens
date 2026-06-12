@@ -106,6 +106,11 @@ class Native {
   /// Tear down the kids block overlay immediately (on exit).
   static Future<void> kidsGuardOff() => _ch.invokeMethod('kidsGuardOff');
 
+  /// Persist kids-mode state natively so MonitorService always sees it.
+  static Future<void> setKidsMode(bool on, List<String> allowed, String lang) =>
+      _ch.invokeMethod('setKidsMode',
+          {'on': on, 'allowed': allowed.join(','), 'lang': lang});
+
   static Future<List<InstalledApp>> listApps() async {
     final raw = await _ch.invokeMethod<List<dynamic>>('listApps') ?? [];
     return raw.map((e) {

@@ -38,6 +38,14 @@ class MonitorService : Service() {
         private const val SHOW_COOLDOWN_MS = 30_000L
         private const val VERIFY_INTERVAL_MS = 60 * 60 * 1000L // 1 hour
         private const val VERIFY_PROMPT_GAP_MS = 2 * 60 * 1000L
+
+        // Sign-in / store / services helpers that allowed apps invoke — never a
+        // "wrong app" a child opened on purpose.
+        private val HELPER_PACKAGES = setOf(
+            "com.google.android.gms",
+            "com.google.android.gsf",
+            "com.android.vending"
+        )
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -167,16 +175,35 @@ class MonitorService : Service() {
      * system UI, the keyboard, or the phone/dialer app (emergency calls).
      */
     private fun handleKidsForeground(pkg: String) {
+        val allowed = Prefs.kidsAllowedApps(this)
+        if (pkg in allowed) {
+            KidsBlockOverlay.hide(this)
+            return
+        }
+        // A package the child can't independently open is never a "wrong app"
+        // — it only surfaces as a helper of an allowed app (Google sign-in,
+        // in-app purchase, ad/web views, share sheets). Exempt:
+        //   • our own app, the launcher, system UI, keyboard, dialer
+        //   • the Google sign-in / Play Services helpers
+        //   • anything with no launcher icon (can't be tapped from home)
         val exempt = pkg == packageName ||
                 pkg in launcherPackages ||
                 pkg == "com.android.systemui" ||
                 pkg == defaultImePackage() ||
-                pkg == defaultDialerPackage()
-        if (exempt || pkg in Prefs.kidsAllowedApps(this)) {
+                pkg == defaultDialerPackage() ||
+                pkg in HELPER_PACKAGES ||
+                !hasLauncherIcon(pkg)
+        if (exempt) {
             KidsBlockOverlay.hide(this)
         } else {
             KidsBlockOverlay.show(this)
         }
+    }
+
+    private fun hasLauncherIcon(pkg: String): Boolean = try {
+        packageManager.getLaunchIntentForPackage(pkg) != null
+    } catch (_: Exception) {
+        true // if unsure, treat as a real app (fail safe → can still block)
     }
 
     private fun defaultImePackage(): String = try {
@@ -256,8 +283,11 @@ class MonitorService : Service() {
 
     private fun resolveLaunchers(): Set<String> {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-        return packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+        // NB: querying HOME also surfaces Settings' FallbackHome activity, which
+        // would wrongly exempt the Settings app in Kids Mode. Drop it.
+        return packageManager.queryIntentActivities(intent, 0)
             .mapNotNull { it.activityInfo?.packageName }
+            .filter { it != "com.android.settings" }
             .toSet()
     }
 

@@ -77,6 +77,7 @@ class _SafeBrowserScreenState extends State<SafeBrowserScreen> {
         setState(() {
           _warning = true;
           _pendingUrl = url;
+          _currentHost = hostOf(url); // badge reflects the warned site
         });
         return false;
     }
