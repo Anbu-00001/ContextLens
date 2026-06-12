@@ -17,6 +17,7 @@ object Prefs {
     const val KEY_KIDS_MODE_ON = "kids_mode_on"      // Boolean, set from Dart
     const val KEY_KIDS_ALLOWED = "kids_allowed_apps" // CSV of package names
     const val KEY_LANGUAGE = "language"              // "en" | "hi" | "kn"
+    const val KEY_POPUP_WHITELIST = "popup_whitelist" // CSV: apps with no popup
 
     fun get(context: Context): SharedPreferences =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -44,4 +45,17 @@ object Prefs {
 
     fun language(context: Context): String =
         get(context).getString(PREFIX + KEY_LANGUAGE, "en") ?: "en"
+
+    fun popupWhitelist(context: Context): Set<String> =
+        (get(context).getString(PREFIX + KEY_POPUP_WHITELIST, "") ?: "")
+            .split(',').filter { it.isNotEmpty() }.toSet()
+
+    fun addToPopupWhitelist(context: Context, pkg: String) {
+        val set = popupWhitelist(context).toMutableSet()
+        if (set.add(pkg)) {
+            get(context).edit()
+                .putString(PREFIX + KEY_POPUP_WHITELIST, set.joinToString(","))
+                .apply()
+        }
+    }
 }

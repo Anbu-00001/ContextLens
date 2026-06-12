@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+
+  <!-- Shield: outer + inner stroke (solid pink) -->
+  <path d="M512 110 L862 244 C862 558 762 802 512 908 C262 802 162 558 162 244 Z"
+        fill="none" stroke="#D81B60" stroke-width="34" stroke-linejoin="round"/>
+  <path d="M512 180 L802 292 C802 552 718 754 512 846 C306 754 222 552 222 292 Z"
+        fill="none" stroke="#F06292" stroke-width="14" stroke-linejoin="round"/>
+
+  <!-- Flame (left) -->
+  <path d="M470 286
+           C524 350 546 414 516 466
+           C504 488 472 498 472 540
+           C472 590 510 624 558 624
+           C520 654 452 654 414 616
+           C368 570 368 490 412 428
+           C440 390 464 340 470 286 Z"
+        fill="#FF7A3D"/>
+  <path d="M474 468
+           C506 500 508 542 484 570
+           C514 568 536 542 536 510
+           C536 486 508 474 474 468 Z"
+        fill="#FFE08A"/>
+
+  <!-- Woman profile silhouette (right), facing left toward the flame -->
+  <path d="M610 286
+           C702 300 764 384 764 484
+           C764 600 678 664 610 664
+           C636 634 650 606 644 588
+           C638 570 612 576 600 558
+           C588 542 608 526 602 508
+           C596 490 568 494 566 472
+           C564 448 598 448 602 426
+           C606 398 580 386 590 360
+           C597 340 610 322 610 286 Z"
+        fill="#D81B60"/>
+
+  <!-- Wordmark -->
+  <text x="512" y="772" text-anchor="middle"
+        font-family="DejaVu Sans, Arial, sans-serif" font-weight="bold"
+        font-size="86" fill="#D81B60">CONSENTLENS</text>
+  <line x1="338" y1="816" x2="686" y2="816" stroke="#E91E63" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="512" cy="816" r="10" fill="#E91E63"/>
+</svg>

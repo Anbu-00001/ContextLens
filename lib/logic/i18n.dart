@@ -212,6 +212,21 @@ class S {
   static const kidsPickApp = L('Tap an app to play',
       'खेलने के लिए ऐप दबाओ', 'ಆಡಲು ಆ್ಯಪ್ ಒತ್ತಿ');
 
+  // Trusted apps — no permission popup
+  static const trustedApps = L('Trusted apps (no popup)',
+      'भरोसेमंद ऐप (कोई पॉपअप नहीं)', 'ನಂಬಲರ್ಹ ಆ್ಯಪ್‌ಗಳು (ಪಾಪ್‌ಅಪ್ ಇಲ್ಲ)');
+  static const trustedAppsSub = L(
+      'Skip the permission popup for apps you use every day',
+      'रोज़ इस्तेमाल होने वाले ऐप के लिए पॉपअप छोड़ें',
+      'ಪ್ರತಿದಿನ ಬಳಸುವ ಆ್ಯಪ್‌ಗಳಿಗೆ ಅನುಮತಿ ಪಾಪ್‌ಅಪ್ ಬಿಟ್ಟುಬಿಡಿ');
+  static const trustedAppsIntro = L(
+      'Turn ON the apps you trust and use daily. ConsentLens will stay quiet for these and keep watching the rest.',
+      'जिन ऐप पर आप भरोसा करते हैं और रोज़ इस्तेमाल करते हैं उन्हें चालू करें। ConsentLens इनके लिए शांत रहेगा और बाकी पर नज़र रखेगा।',
+      'ನೀವು ನಂಬುವ ಮತ್ತು ಪ್ರತಿದಿನ ಬಳಸುವ ಆ್ಯಪ್‌ಗಳನ್ನು ಆನ್ ಮಾಡಿ. ConsentLens ಇವುಗಳಿಗೆ ಶಾಂತವಾಗಿರುತ್ತದೆ, ಉಳಿದವುಗಳನ್ನು ಗಮನಿಸುತ್ತದೆ.');
+  static const dontWarnThisApp = L("Don't warn me for this app",
+      'इस ऐप के लिए न चेताएँ', 'ಈ ಆ್ಯಪ್‌ಗೆ ಎಚ್ಚರಿಸಬೇಡಿ');
+  static const noPopupApps = L('No popup', 'कोई पॉपअप नहीं', 'ಪಾಪ್‌ಅಪ್ ಇಲ್ಲ');
+
   // Stalkerware / safety module
   static const safetyScan = L('Spyware safety scan', 'स्पाईवेयर सुरक्षा स्कैन',
       'ಸ್ಪೈವೇರ್ ಸುರಕ್ಷತಾ ಸ್ಕ್ಯಾನ್');

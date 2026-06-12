@@ -14,6 +14,7 @@ import 'learn_zone.dart';
 import 'safe_browser.dart';
 import 'safety_screen.dart';
 import 'scam_scan.dart';
+import 'trusted_apps.dart';
 import 'trusted_circle.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -485,6 +486,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     fontWeight: FontWeight.w600,
                                     color: CLColors.textPrimary)),
                             Text(S.verifySub.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    color: CLColors.textMuted,
+                                    height: 1.3)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded,
+                          color: CLColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Trusted apps (no permission popup) ──
+            Card(
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => TrustedAppsScreen(lang: lang)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: CLColors.greenLight,
+                          borderRadius: BorderRadius.circular(11),
+                        ),
+                        child: const Icon(Icons.notifications_off_rounded,
+                            color: CLColors.green, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(S.trustedApps.of(lang),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: CLColors.textPrimary)),
+                            Text(S.trustedAppsSub.of(lang),
                                 style: const TextStyle(
                                     fontSize: 11,
                                     color: CLColors.textMuted,

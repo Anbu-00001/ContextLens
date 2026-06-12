@@ -161,6 +161,11 @@ class MonitorService : Service() {
             OverlayController.hide(this)
             return
         }
+        // Trusted apps: the user marked these daily-use apps as "no popup".
+        if (pkg in Prefs.popupWhitelist(this)) {
+            OverlayController.hide(this)
+            return
+        }
         val shownAt = lastShownAt[pkg] ?: 0L
         if (now - shownAt < SHOW_COOLDOWN_MS) return
 

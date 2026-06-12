@@ -18,6 +18,7 @@ class Keys {
   static const kidsPin = 'kids_pin'; // 4-digit exit PIN for Kids Mode
   static const kidsModeOn = 'kids_mode_on'; // read by MonitorService (Kotlin)
   static const kidsAllowedApps = 'kids_allowed_apps'; // CSV of package names
+  static const popupWhitelist = 'popup_whitelist'; // CSV: apps with no popup
 }
 
 class HistoryEntry {
@@ -184,4 +185,21 @@ class Store {
 
   static Future<bool> kidsModeOn() async =>
       (await _prefs()).getBool(Keys.kidsModeOn) ?? false;
+
+  // ── Trusted apps: skip the permission popup for these (shared w/ Kotlin) ──
+  static Future<List<String>> popupWhitelist() async {
+    final raw = (await _prefs()).getString(Keys.popupWhitelist) ?? '';
+    return raw.split(',').where((s) => s.isNotEmpty).toList();
+  }
+
+  static Future<void> setPopupWhitelist(List<String> pkgs) async =>
+      (await _prefs()).setString(Keys.popupWhitelist, pkgs.join(','));
+
+  static Future<void> addToPopupWhitelist(String pkg) async {
+    final list = await popupWhitelist();
+    if (!list.contains(pkg)) {
+      list.add(pkg);
+      await setPopupWhitelist(list);
+    }
+  }
 }

@@ -116,6 +116,11 @@ class _OverlayAppState extends State<OverlayApp> {
     _overlayCh.invokeMethod('close');
   }
 
+  void _whitelist(String pkg) {
+    Speech.stop();
+    _overlayCh.invokeMethod('whitelistApp', {'pkg': pkg});
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = _report;
@@ -568,14 +573,30 @@ class _OverlayAppState extends State<OverlayApp> {
   }
 
   Widget _actions(AppReport r) {
+    final isChild = _userMode == 'child';
+    final severe =
+        r.shady || _spy?.suspected == true || (isChild && r.kidsFit != Fit.ok);
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
       decoration: const BoxDecoration(
         color: CLColors.white,
         border: Border(top: BorderSide(color: CLColors.border)),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Offer to silence the popup only for ordinary, non-risky apps.
+          if (!severe && !r.isWebsite)
+            TextButton.icon(
+              onPressed: () => _whitelist(r.packageName),
+              icon: const Icon(Icons.notifications_off_rounded,
+                  size: 17, color: CLColors.textSec),
+              label: Text(S.dontWarnThisApp.of(_lang),
+                  style: const TextStyle(
+                      fontSize: 12.5, color: CLColors.textSec)),
+            ),
+          Row(
+            children: [
           Expanded(
             child: OutlinedButton(
               onPressed: () {
@@ -596,6 +617,8 @@ class _OverlayAppState extends State<OverlayApp> {
                   padding: const EdgeInsets.symmetric(vertical: 12)),
               child: Text(S.gotIt.of(_lang)),
             ),
+          ),
+            ],
           ),
         ],
       ),

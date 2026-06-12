@@ -60,6 +60,12 @@ object OverlayController {
                     detachView(app)
                     result.success(null)
                 }
+                "whitelistApp" -> {
+                    val pkg = call.argument<String>("pkg")
+                    if (pkg != null) Prefs.addToPopupWhitelist(app, pkg)
+                    detachView(app)
+                    result.success(null)
+                }
                 "openHelp" -> {
                     detachView(app)
                     val intent = app.packageManager
